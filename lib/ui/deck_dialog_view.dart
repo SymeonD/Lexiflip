@@ -1,0 +1,248 @@
+import 'package:cards/models/database_helper.dart';
+import 'package:cards/models/language.dart';
+import 'package:cards/models/language_card.dart';
+import 'package:cards/models/language_deck.dart';
+import 'package:cards/ui/search_bar_view.dart';
+import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
+
+class DeckDialogView extends StatefulWidget {
+  final Language language;
+  // For editing an existing deck
+  final LanguageDeck? languageDeck;
+  // Callback to reload the decks
+  final VoidCallback onDelete;
+  const DeckDialogView(
+      {super.key,
+      required this.language,
+      this.languageDeck,
+      required this.onDelete});
+
+  @override
+  State createState() => _DeckDialogViewState();
+}
+
+class _DeckDialogViewState extends State<DeckDialogView> {
+  late TextEditingController deckNameController;
+  late TextEditingController searchController;
+  late ScrollController scrollController;
+  bool _isButtonEnabled = false;
+
+  List<LanguageCardSelection> cardsWithSelection = [];
+  List<LanguageCardSelection> filteredCards = [];
+  List<LanguageCard?> deckCards = [];
+
+  @override
+  void initState() {
+    deckNameController = TextEditingController();
+    searchController = TextEditingController();
+    scrollController = ScrollController();
+    if (widget.languageDeck != null) {
+      deckNameController.text = widget.languageDeck!.languageDeckName;
+    }
+    deckNameController.addListener(() {
+      setState(() {
+        _filter("");
+        _isButtonEnabled = deckNameController.text.isNotEmpty;
+      });
+    });
+    _loadCards();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    deckNameController.dispose();
+    searchController.dispose();
+    scrollController.dispose();
+    widget.onDelete();
+    super.dispose();
+  }
+
+  // Load all cards linked to the language
+  Future<void> _loadCards() async {
+    try {
+      final db = DatabaseHelper.instance;
+      var cardList = await db.getCards(
+          0, widget.language.languageId!, true); // Get all cards (default deck)
+      if (widget.languageDeck != null && !widget.languageDeck!.isDefault!) {
+        // Get all the cards linked to the deck
+        deckCards = await db.getCards(
+            widget.languageDeck!.languageDeckId!, widget.language.languageId!);
+        setState(() {
+          cardsWithSelection = cardList
+              .map((card) => LanguageCardSelection(
+                  card: card,
+                  isSelected: deckCards
+                      .whereType<LanguageCard>()
+                      .map((card) => card.languageCardId)
+                      .contains(card?.languageCardId)))
+              .toList();
+          _filter(searchController.text);
+        });
+      } else {
+        setState(() {
+          cardsWithSelection = cardList
+              .map((card) =>
+                  LanguageCardSelection(card: card, isSelected: false))
+              .toList();
+          _filter(searchController.text);
+        });
+      }
+    } catch (e) {
+      Logger().e("Error loading languages: $e");
+    }
+  }
+
+  void _filter(String filterText) {
+    setState(() {
+      if (filterText.trim().isEmpty) {
+        filteredCards = cardsWithSelection;
+      } else {
+        filteredCards = cardsWithSelection
+            .where(
+              (element) =>
+                  element.card!.nativeText
+                      .toLowerCase()
+                      .startsWith(filterText.trim().toLowerCase()) ||
+                  element.card!.nativeText
+                      .toLowerCase()
+                      .contains(filterText.trim().toLowerCase()),
+            )
+            .toList();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      // title: const Text('Create new deck'),
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 10),
+            SearchBarView(
+                searchController: deckNameController,
+                hintText: widget.languageDeck != null
+                    ? widget.languageDeck!.languageDeckName
+                    : 'What is this deck about ?'),
+            const SizedBox(height: 16),
+            SearchBarView(
+                searchController: searchController,
+                hintText: widget.languageDeck != null
+                    ? 'Search Card Name'
+                    : 'Add existing cards',
+                onChanged: _filter),
+            const SizedBox(height: 16),
+            // Scrollable list of cards goes here
+            SizedBox(
+              height: 200,
+              child: Scrollbar(
+                interactive: true,
+                controller: scrollController,
+                child: ListView.separated(
+                    controller: scrollController,
+                    padding: MediaQuery.of(context).padding,
+                    itemCount: filteredCards.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 0),
+                    itemBuilder: (context, index) => GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            filteredCards[index].isSelected =
+                                !filteredCards[index].isSelected;
+                          });
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(0),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                height: 40,
+                                child: Transform.scale(
+                                  scale: 1.2,
+                                  child: Checkbox(
+                                    value: filteredCards[index].isSelected,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _isButtonEnabled = true;
+                                        filteredCards[index].isSelected =
+                                            value!;
+                                      });
+                                    },
+                                  ),
+                                ),
+                              ),
+                              Text(filteredCards[index].card!.nativeText),
+                            ],
+                          ),
+                        ))),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                    onPressed: _isButtonEnabled
+                        ? () async {
+                            if (widget.languageDeck != null) {
+                              await DatabaseHelper.instance.updateDeckName(
+                                  widget.languageDeck!.languageDeckId!,
+                                  deckNameController.text);
+
+                              for (var card in filteredCards) {
+                                bool wasSelected = deckCards
+                                    .whereType<LanguageCard>()
+                                    .map((c) => c.languageCardId)
+                                    .contains(card.card!.languageCardId);
+
+                                if (card.isSelected != wasSelected) {
+                                  if (card.isSelected) {
+                                    await DatabaseHelper.instance.addCardToDeck(
+                                        widget.languageDeck!.languageDeckId!,
+                                        card.card!.languageCardId!);
+                                  } else {
+                                    await DatabaseHelper.instance
+                                        .removeCardFromDeck(
+                                            widget
+                                                .languageDeck!.languageDeckId!,
+                                            card.card!.languageCardId!);
+                                  }
+                                }
+                              }
+                            } else {
+                              int newDeckId = await DatabaseHelper.instance
+                                  .insertDeck(widget.language.languageId!,
+                                      deckNameController.text);
+                              for (var card
+                                  in filteredCards.where((c) => c.isSelected)) {
+                                await DatabaseHelper.instance.addCardToDeck(
+                                    newDeckId, card.card!.languageCardId!);
+                              }
+                            }
+                            if (context.mounted) Navigator.pop(context);
+                          }
+                        : null,
+                    child: Text(
+                      widget.languageDeck != null ? 'Edit' : 'Add',
+                      textAlign: TextAlign.end,
+                    )),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class LanguageCardSelection {
+  LanguageCard? card;
+  bool isSelected;
+
+  LanguageCardSelection({required this.card, this.isSelected = false});
+}

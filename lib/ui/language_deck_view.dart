@@ -1,0 +1,448 @@
+import 'package:cards/models/database_helper.dart';
+import 'package:cards/models/language.dart';
+import 'package:cards/models/language_deck.dart';
+import 'package:cards/pages/language_deck_cards_page.dart';
+import 'package:cards/pages/play_page.dart';
+import 'package:cards/ui/deck_dialog_view.dart';
+import 'package:flutter/material.dart';
+
+class LanguageDeckView extends StatefulWidget {
+  final Language language;
+  final LanguageDeck languageDeck;
+  final VoidCallback onDelete;
+
+  const LanguageDeckView(
+      {super.key,
+      required this.language,
+      required this.languageDeck,
+      required this.onDelete});
+
+  @override
+  State createState() => _LanguageDeckViewState();
+}
+
+class _LanguageDeckViewState extends State<LanguageDeckView> {
+  int _deckCardCount = 0;
+  double scaleA = 1;
+
+  // Load the number of cards in the deck
+  void _loadDeckCardCount() async {
+    // Get the number of cards in the deck
+    _deckCardCount = await DatabaseHelper.instance.getDeckCardCount(
+        widget.languageDeck.languageDeckId!,
+        widget.languageDeck.isDefault!,
+        widget.language.languageId!);
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDeckCardCount();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      splashColor: Colors.transparent,
+      onTap: () {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => LanguageCardPage(
+                    language: widget.language,
+                    languageDeck: widget.languageDeck,
+                    onCardEdited: _loadDeckCardCount)));
+      },
+      child: SizedBox(
+        width: 200,
+        height: 500, // Define the height of the container here
+        child: Card(
+          elevation: 4.0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0),
+          ),
+          color: Colors.white,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  PopupMenuButton<String>(
+                    onSelected: (value) {
+                      // Handle menu selection
+                      if (value == "edit" && !widget.languageDeck.isDefault!) {
+                        // Edit the deck
+                        showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return DeckDialogView(
+                                language: widget.language,
+                                languageDeck: widget.languageDeck,
+                                onDelete: _loadDeckCardCount,
+                              );
+                            });
+                      } else if (value == "share") {
+                        // Share the deck
+                        // Show a bar at the bottom of the screen with a text 'Coming soon'
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text("Coming soon"),
+                            behavior: SnackBarBehavior.floating,
+                            margin: EdgeInsets.only(
+                              bottom:
+                                  20, // Adjust to control height from bottom
+                              left: MediaQuery.of(context).size.width *
+                                  0.05, // 5% margin on left
+                              right: MediaQuery.of(context).size.width *
+                                  0.05, // 5% margin on right
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius.circular(12), // Rounded corners
+                            ),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      } else if (value == "delete") {
+                        // Delete the deck, show a confirmation dialog if more than 0 cards
+                        if (_deckCardCount > 0) {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text("Delete deck"),
+                                content: const Text(
+                                    "Are you sure you want to delete this deck?"),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text("Cancel"),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      // Delete the deck
+                                      DatabaseHelper.instance.deleteDeck(
+                                          widget.languageDeck.languageDeckId!);
+                                      widget.onDelete();
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text("Delete"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        } else {
+                          // Delete the deck
+                          DatabaseHelper.instance
+                              .deleteDeck(widget.languageDeck.languageDeckId!);
+                          widget.onDelete();
+                        }
+                        setState(() {
+                          // Remove the deck from the list
+                        });
+                      }
+                    },
+                    offset: const Offset(0, 40),
+                    color: Colors.white,
+                    icon: const Icon(Icons.more_horiz),
+                    itemBuilder: (BuildContext context) => [
+                      // Edit option
+                      PopupMenuItem(
+                        enabled: !widget.languageDeck.isDefault!,
+                        value: "edit",
+                        height: 35,
+                        padding: const EdgeInsets.only(left: 10),
+                        child: const IntrinsicWidth(
+                          child: SizedBox(
+                            width: 100,
+                            child: Row(
+                              children: [
+                                Icon(Icons.edit_outlined, color: Colors.black),
+                                SizedBox(width: 10),
+                                Text("Edit"),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Share option
+                      const PopupMenuItem(
+                        value: "share",
+                        height: 35,
+                        child: IntrinsicWidth(
+                          child: SizedBox(
+                            width: 100,
+                            child: Row(
+                              children: [
+                                Icon(Icons.share_outlined, color: Colors.black),
+                                SizedBox(width: 10),
+                                Text("Share"),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const PopupMenuDivider(),
+                      // Delete option
+                      const PopupMenuItem(
+                        value: "delete",
+                        height: 35,
+                        child: SizedBox(
+                          width: 100,
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete_outlined, color: Colors.red),
+                              SizedBox(width: 10),
+                              Text("Delete",
+                                  style: TextStyle(color: Colors.red)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(
+                height:
+                    150, // Controls the height of the row with the two containers
+                width: 175,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ClipPath(
+                      clipper: MyCustomClipperLeft(), // Clipping the InkWell
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          splashColor: Colors.transparent,
+                          onTap: () {
+                            //TODO: car mode
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text("Coming soon"),
+                                behavior: SnackBarBehavior.floating,
+                                margin: EdgeInsets.only(
+                                  bottom:
+                                      20, // Adjust to control height from bottom
+                                  left: MediaQuery.of(context).size.width *
+                                      0.05, // 5% margin on left
+                                  right: MediaQuery.of(context).size.width *
+                                      0.05, // 5% margin on right
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                      12), // Rounded corners
+                                ),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          child:
+                              // Left side, car mode, blue
+                              CustomPaint(
+                            painter: MyPainterLeft(),
+                            child: const Stack(children: [
+                              SizedBox(
+                                height: 150,
+                                width: 75,
+                              ),
+                              Positioned(
+                                top: 50,
+                                left: 13,
+                                child: Icon(
+                                    Icons.directions_car_filled_outlined,
+                                    color: Colors.white,
+                                    size: 50),
+                              ),
+                            ]),
+                          ),
+                        ),
+                      ),
+                    ),
+                    ClipPath(
+                      clipper: MyCustomClipperRight(), // Clipping the InkWell
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          splashColor: Colors.transparent,
+                          onTap: () {
+                            _deckCardCount > 0
+                                ? Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => PlayPage(
+                                              language: widget.language,
+                                              languageDeck: widget.languageDeck,
+                                            )))
+                                : ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: const Text(
+                                          "This deck is empty, you can't play it"),
+                                      behavior: SnackBarBehavior.floating,
+                                      margin: EdgeInsets.only(
+                                        bottom:
+                                            20, // Adjust to control height from bottom
+                                        left:
+                                            MediaQuery.of(context).size.width *
+                                                0.05, // 5% margin on left
+                                        right:
+                                            MediaQuery.of(context).size.width *
+                                                0.05, // 5% margin on right
+                                      ),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                            12), // Rounded corners
+                                      ),
+                                      duration: const Duration(seconds: 2),
+                                    ),
+                                  );
+                          },
+                          child: CustomPaint(
+                            size: const Size(75, 150), // Adjust size as needed
+                            painter: MyPainterRight(),
+                            child: const Stack(children: [
+                              SizedBox(
+                                height: 150,
+                                width: 75,
+                              ),
+                              Positioned(
+                                top: 47,
+                                right: 14,
+                                child: Icon(Icons.play_arrow_outlined,
+                                    color: Colors.white, size: 55),
+                              ),
+                            ]),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 25), // Add space between the row and text
+              Text(widget.languageDeck.languageDeckName,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold)),
+              Text("$_deckCardCount card${_deckCardCount > 1 ? "s" : ""}"),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class MyPainterLeft extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint();
+    Path path = Path();
+
+    // Path number 1
+
+    path = getCustomPathLeft(size);
+    paint.color = const Color(0xff0070FF);
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
+  }
+}
+
+class MyCustomClipperLeft extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    return getCustomPathLeft(size); // Use the same shape for clipping
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) {
+    return false;
+  }
+}
+
+Path getCustomPathLeft(Size size) {
+  Path path = Path();
+  path.lineTo(size.width, size.height / 2);
+  path.cubicTo(size.width, size.height * 0.76, size.width, size.height * 0.73,
+      size.width, size.height * 0.96);
+  path.cubicTo(size.width, size.height * 0.98, size.width * 0.96, size.height,
+      size.width * 0.91, size.height);
+  path.cubicTo(size.width * 0.4, size.height * 0.98, 0, size.height * 0.76, 0,
+      size.height / 2);
+  path.cubicTo(0, size.height * 0.24, size.width * 0.4, size.height * 0.03,
+      size.width * 0.91, 0);
+  path.cubicTo(size.width * 0.96, 0, size.width, size.height * 0.02, size.width,
+      size.height * 0.05);
+  path.cubicTo(size.width, size.height * 0.39, size.width, size.height * 0.24,
+      size.width, size.height / 2);
+  path.cubicTo(size.width, size.height / 2, size.width, size.height / 2,
+      size.width, size.height / 2);
+  path.close();
+  return path;
+}
+
+class MyPainterRight extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint();
+    Path path = Path();
+
+    // Path number 1
+    path = getCustomPathRight(size);
+    paint.color = const Color(0xff50F061);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
+  }
+}
+
+class MyCustomClipperRight extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    return getCustomPathRight(size); // Use the same shape for clipping
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) {
+    return false;
+  }
+}
+
+Path getCustomPathRight(Size size) {
+  Path path = Path();
+  path.lineTo(0, size.height / 2);
+  path.cubicTo(
+      0, size.height * 0.24, 0, size.height * 0.28, 0, size.height * 0.05);
+  path.cubicTo(
+      0, size.height * 0.02, size.width * 0.04, 0, size.width * 0.09, 0);
+  path.cubicTo(size.width * 0.6, size.height * 0.03, size.width,
+      size.height * 0.24, size.width, size.height / 2);
+  path.cubicTo(size.width, size.height * 0.76, size.width * 0.6,
+      size.height * 0.98, size.width * 0.09, size.height);
+  path.cubicTo(size.width * 0.04, size.height, 0, size.height * 0.98, 0,
+      size.height * 0.96);
+  path.cubicTo(
+      0, size.height * 0.62, 0, size.height * 0.77, 0, size.height / 2);
+  path.cubicTo(0, size.height / 2, 0, size.height / 2, 0, size.height / 2);
+  path.close();
+  return path;
+}
