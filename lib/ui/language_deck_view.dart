@@ -4,6 +4,7 @@ import 'package:cards/models/language_deck.dart';
 import 'package:cards/pages/language_deck_cards_page.dart';
 import 'package:cards/pages/play_page.dart';
 import 'package:cards/ui/deck_dialog_view.dart';
+import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:flutter/material.dart';
 
 class LanguageDeckView extends StatefulWidget {
@@ -92,25 +93,7 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                       } else if (value == "share") {
                         // Share the deck
                         // Show a bar at the bottom of the screen with a text 'Coming soon'
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text("Coming soon"),
-                            behavior: SnackBarBehavior.floating,
-                            margin: EdgeInsets.only(
-                              bottom:
-                                  20, // Adjust to control height from bottom
-                              left: MediaQuery.of(context).size.width *
-                                  0.05, // 5% margin on left
-                              right: MediaQuery.of(context).size.width *
-                                  0.05, // 5% margin on right
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(12), // Rounded corners
-                            ),
-                            duration: const Duration(seconds: 2),
-                          ),
-                        );
+                        showCustomSnackBar(context, "Coming soon", 2);
                       } else if (value == "delete") {
                         // Delete the deck, show a confirmation dialog if more than 0 cards
                         if (_deckCardCount > 0) {
@@ -229,25 +212,7 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                           splashColor: Colors.transparent,
                           onTap: () {
                             //TODO: car mode
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text("Coming soon"),
-                                behavior: SnackBarBehavior.floating,
-                                margin: EdgeInsets.only(
-                                  bottom:
-                                      20, // Adjust to control height from bottom
-                                  left: MediaQuery.of(context).size.width *
-                                      0.05, // 5% margin on left
-                                  right: MediaQuery.of(context).size.width *
-                                      0.05, // 5% margin on right
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                      12), // Rounded corners
-                                ),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
+                            showCustomSnackBar(context, "Coming soon", 2);
                           },
                           child:
                               // Left side, car mode, blue
@@ -286,28 +251,8 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                               language: widget.language,
                                               languageDeck: widget.languageDeck,
                                             )))
-                                : ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: const Text(
-                                          "This deck is empty, you can't play it"),
-                                      behavior: SnackBarBehavior.floating,
-                                      margin: EdgeInsets.only(
-                                        bottom:
-                                            20, // Adjust to control height from bottom
-                                        left:
-                                            MediaQuery.of(context).size.width *
-                                                0.05, // 5% margin on left
-                                        right:
-                                            MediaQuery.of(context).size.width *
-                                                0.05, // 5% margin on right
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                            12), // Rounded corners
-                                      ),
-                                      duration: const Duration(seconds: 2),
-                                    ),
-                                  );
+                                : showCustomSnackBar(context,
+                                    "This deck is empty, you can't play it", 2);
                           },
                           child: CustomPaint(
                             size: const Size(75, 150), // Adjust size as needed

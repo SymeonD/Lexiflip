@@ -4,6 +4,7 @@ import 'package:cards/models/language.dart';
 import 'package:cards/models/language_card.dart';
 import 'package:cards/models/language_deck.dart';
 import 'package:cards/ui/card_dialog_view.dart';
+import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:flutter/material.dart';
 
 class LanguageCardView extends StatefulWidget {
@@ -83,25 +84,7 @@ class _LanguageCardViewState extends State<LanguageCardView> {
                         } else if (value == "share") {
                           // Share the deck
                           // Show a bar at the bottom of the screen with a text 'Coming soon'
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text("Coming soon"),
-                              behavior: SnackBarBehavior.floating,
-                              margin: EdgeInsets.only(
-                                bottom:
-                                    20, // Adjust to control height from bottom
-                                left: MediaQuery.of(context).size.width *
-                                    0.05, // 5% margin on left
-                                right: MediaQuery.of(context).size.width *
-                                    0.05, // 5% margin on right
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                    12), // Rounded corners
-                              ),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
+                          showCustomSnackBar(context, "Coming soon", 2);
                         } else if (value == "remove") {
                           // Remove the card from the deck
                           DatabaseHelper.instance.removeCardFromDeck(

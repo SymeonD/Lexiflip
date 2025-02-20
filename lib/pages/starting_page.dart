@@ -100,7 +100,7 @@ class _StartingPageState extends State<StartingPage> {
                   ],
                 ),
                 // Elevated button at the bottom right of the screen
-                TextButton(
+                IconButton(
                   onPressed: () {
                     // ignore: unnecessary_null_comparison
                     countryCode != null
@@ -134,9 +134,10 @@ class _StartingPageState extends State<StartingPage> {
                       ),
                     );
                   },
-                  child: const Text(
-                    "Go",
-                    textAlign: TextAlign.end,
+                  icon: const Icon(
+                    Icons.check,
+                    color: Color(0xff1EA6c6),
+                    size: 40,
                   ),
                 ),
               ]),

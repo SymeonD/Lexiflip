@@ -130,13 +130,16 @@ class _DeckDialogViewState extends State<DeckDialogView> {
                     ? widget.languageDeck!.languageDeckName
                     : 'What is this deck about ?'),
             const SizedBox(height: 16),
+            const SizedBox(
+                width: 150, child: Divider(height: 1, color: Colors.grey)),
+            const SizedBox(height: 16),
             SearchBarView(
                 searchController: searchController,
                 hintText: widget.languageDeck != null
                     ? 'Search Card Name'
                     : 'Add existing cards',
                 onChanged: _filter),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             // Scrollable list of cards goes here
             SizedBox(
               height: 200,
@@ -157,26 +160,29 @@ class _DeckDialogViewState extends State<DeckDialogView> {
                           });
                         },
                         child: Padding(
-                          padding: const EdgeInsets.all(0),
+                          padding: const EdgeInsets.only(left: 8),
                           child: Row(
                             children: [
+                              Expanded(
+                                child: Text(
+                                    filteredCards[index].card!.nativeText,
+                                    style: const TextStyle(fontSize: 16)),
+                              ),
                               SizedBox(
                                 height: 40,
                                 child: Transform.scale(
-                                  scale: 1.2,
-                                  child: Checkbox(
+                                  scale: 0.8,
+                                  child: Switch(
                                     value: filteredCards[index].isSelected,
                                     onChanged: (value) {
                                       setState(() {
                                         _isButtonEnabled = true;
-                                        filteredCards[index].isSelected =
-                                            value!;
+                                        filteredCards[index].isSelected = value;
                                       });
                                     },
                                   ),
                                 ),
                               ),
-                              Text(filteredCards[index].card!.nativeText),
                             ],
                           ),
                         ))),
@@ -186,53 +192,56 @@ class _DeckDialogViewState extends State<DeckDialogView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
-                    onPressed: _isButtonEnabled
-                        ? () async {
-                            if (widget.languageDeck != null) {
-                              await DatabaseHelper.instance.updateDeckName(
-                                  widget.languageDeck!.languageDeckId!,
-                                  deckNameController.text);
+                IconButton(
+                  disabledColor: Colors.grey,
+                  color: const Color(0xff1EA6c6),
+                  onPressed: _isButtonEnabled
+                      ? () async {
+                          if (widget.languageDeck != null) {
+                            await DatabaseHelper.instance.updateDeckName(
+                                widget.languageDeck!.languageDeckId!,
+                                deckNameController.text);
 
-                              for (var card in filteredCards) {
-                                bool wasSelected = deckCards
-                                    .whereType<LanguageCard>()
-                                    .map((c) => c.languageCardId)
-                                    .contains(card.card!.languageCardId);
+                            for (var card in filteredCards) {
+                              bool wasSelected = deckCards
+                                  .whereType<LanguageCard>()
+                                  .map((c) => c.languageCardId)
+                                  .contains(card.card!.languageCardId);
 
-                                if (card.isSelected != wasSelected) {
-                                  if (card.isSelected) {
-                                    await DatabaseHelper.instance.addCardToDeck(
-                                        widget.languageDeck!.languageDeckId!,
-                                        card.card!.languageCardId!);
-                                  } else {
-                                    await DatabaseHelper.instance
-                                        .removeCardFromDeck(
-                                            widget
-                                                .languageDeck!.languageDeckId!,
-                                            card.card!.languageCardId!);
-                                  }
+                              if (card.isSelected != wasSelected) {
+                                if (card.isSelected) {
+                                  await DatabaseHelper.instance.addCardToDeck(
+                                      widget.languageDeck!.languageDeckId!,
+                                      card.card!.languageCardId!);
+                                } else {
+                                  await DatabaseHelper.instance
+                                      .removeCardFromDeck(
+                                          widget.languageDeck!.languageDeckId!,
+                                          card.card!.languageCardId!);
                                 }
                               }
-                            } else {
-                              int newDeckId = await DatabaseHelper.instance
-                                  .insertDeck(widget.language.languageId!,
-                                      deckNameController.text);
-                              for (var card
-                                  in filteredCards.where((c) => c.isSelected)) {
-                                await DatabaseHelper.instance.addCardToDeck(
-                                    newDeckId, card.card!.languageCardId!);
-                              }
                             }
-                            if (context.mounted) Navigator.pop(context);
+                          } else {
+                            int newDeckId = await DatabaseHelper.instance
+                                .insertDeck(widget.language.languageId!,
+                                    deckNameController.text);
+                            for (var card
+                                in filteredCards.where((c) => c.isSelected)) {
+                              await DatabaseHelper.instance.addCardToDeck(
+                                  newDeckId, card.card!.languageCardId!);
+                            }
                           }
-                        : null,
-                    child: Text(
-                      widget.languageDeck != null ? 'Edit' : 'Add',
-                      textAlign: TextAlign.end,
-                    )),
+                          if (context.mounted) Navigator.pop(context);
+                        }
+                      : null,
+                  icon: const Icon(
+                    Icons.check,
+                    size: 30,
+                  ),
+                )
               ],
-            )
+            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
