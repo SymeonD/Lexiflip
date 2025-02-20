@@ -122,7 +122,7 @@ class _StartingPageState extends State<StartingPage> {
                           }
                         : null;
                     context.mounted
-                        ? Navigator.push(
+                        ? Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                               builder: (context) => const HomePage(),

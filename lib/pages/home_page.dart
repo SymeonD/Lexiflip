@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,32 +36,38 @@ class _HomePageState extends State<HomePage>
 
   final languageModelManager = OnDeviceTranslatorModelManager();
 
+  late String nativeCountryCode;
+
+  Future<void> checkNetworkAndPrompt(BuildContext context) async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (!connectivityResult.contains(ConnectivityResult.wifi)) {
+      context.mounted
+          ? showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text("Language downloading"),
+                content: const Text(
+                    "At the moment only wifi is supported for language downloading, please connect to wifi for the download to continue. In the meantime you will not be able to use automatic translation."),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("Ok"),
+                  ),
+                ],
+              ),
+            )
+          : null;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _loadLanguages();
 
-    Future<void> checkNetworkAndPrompt(BuildContext context) async {
-      var connectivityResult = await Connectivity().checkConnectivity();
-      if (!connectivityResult.contains(ConnectivityResult.wifi)) {
-        context.mounted
-            ? showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text("Language downloading"),
-                  content: const Text(
-                      "At the moment only wifi is supported for language downloading, please connect to wifi for the download to continue. In the meantime you will not be able to use automatic translation."),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text("Ok"),
-                    ),
-                  ],
-                ),
-              )
-            : null;
-      }
-    }
+    SharedPreferences.getInstance().then((prefs) {
+      nativeCountryCode = prefs.getString('nativeCountryCode') ?? "";
+    });
 
     checkNetworkAndPrompt(context);
 
@@ -303,7 +310,9 @@ class _HomePageState extends State<HomePage>
   }
 
   Future<CountryCode?> showPickerDialog(BuildContext context) async {
+    // Add native country code to the list of added languages
     final addedLanguages = languages.map((lang) => lang.languageCode).toSet();
+    addedLanguages.add(nativeCountryCode);
     return await showCountryCodePickerDialog(
       context: context,
       customizationBuilders: CustomizationBuilders(
