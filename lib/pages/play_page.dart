@@ -37,6 +37,8 @@ class _PlayPageState extends State<PlayPage> {
 
   FlutterTts flutterTts = FlutterTts();
 
+  int deleteOffset = 0;
+
   void _loadCards() async {
     try {
       final db = DatabaseHelper.instance;
@@ -83,6 +85,7 @@ class _PlayPageState extends State<PlayPage> {
     setState(() {
       _loadCards();
       cards.shuffle();
+      deleteOffset = 0;
     });
   }
 
@@ -213,18 +216,19 @@ class _PlayPageState extends State<PlayPage> {
                       }
                       cardsLength = cards.length; // Update cardsLength properly
                     });
-                    if (currentIndex == cardsLength) {
-                      return true;
-                    } else {
-                      return false;
-                    }
+                    return previousIndex == cardsLength ? true : false;
+                    // }
                   } else {
                     return true;
                   }
                 },
                 cardBuilder:
                     (context, index, percentThresholdX, percentThresholdY) {
-                  final card = cardsLength > 1 ? cards[index] : cards[0];
+                  int distanceToIndex = index - cardsLength + 1;
+                  index = distanceToIndex > 0 ? index - distanceToIndex : index;
+                  Logger().i(
+                      "Current index: $index, Cards remaining: $cardsLength");
+                  final card = cards[index];
                   return Align(
                     alignment: const Alignment(0, 1),
                     child: InkWell(
@@ -291,7 +295,7 @@ class _PlayPageState extends State<PlayPage> {
                         height: 61,
                       )),
             Center(
-              child: Text(card!.nativeText,
+              child: Text(card.nativeText,
                   style: const TextStyle(
                       fontSize: 32, fontWeight: FontWeight.bold)),
             ),
