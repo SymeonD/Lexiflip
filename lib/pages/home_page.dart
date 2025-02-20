@@ -1,9 +1,7 @@
 import 'dart:isolate';
-import 'dart:ui';
 
 import 'package:cards/pages/language_decks_page.dart';
 import 'package:cards/utils/country_to_language.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:canopas_country_picker/canopas_country_picker.dart';
 import 'package:cards/models/database_helper.dart';

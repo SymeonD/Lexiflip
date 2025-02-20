@@ -43,7 +43,7 @@ class _PlayPageState extends State<PlayPage> {
       var cardList = await db.getCards(widget.languageDeck.languageDeckId!,
           widget.language.languageId!, widget.languageDeck.isDefault!);
       // Add an empty card to the list
-      cardList.add(LanguageCard(languageId: 1, nativeText: "", localText: ""));
+      // cardList.add(LanguageCard(languageId: 1, nativeText: "", localText: ""));
       setState(() {
         cards.addAll(cardList);
         cardsLength = cards.length;
@@ -128,7 +128,7 @@ class _PlayPageState extends State<PlayPage> {
       body: cards.isEmpty
           ? const Center(
               child: Text(
-                "No cards available",
+                "You finished the deck!",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             )
@@ -137,7 +137,8 @@ class _PlayPageState extends State<PlayPage> {
               child: CardSwiper(
                 backCardOffset: const Offset(0, 30),
                 cardsCount: cardsLength,
-                isDisabled: cardsLength <= 2,
+                numberOfCardsDisplayed: cardsLength > 1 ? 2 : 1,
+                // isDisabled: cardsLength <= 2,
                 controller: swiperController,
                 // isLoop: false,
                 allowedSwipeDirection:
@@ -168,17 +169,17 @@ class _PlayPageState extends State<PlayPage> {
                     }
                   } else {
                     // If index is one before the last
-                    if (currentIndex == cardsLength - 1) {
-                      swiperController.swipe(CardSwiperDirection.left);
-                      swiperController.swipe(CardSwiperDirection.left);
-                      return true;
-                    }
+                    // if (currentIndex == cardsLength - 1) {
+                    //   swiperController.swipe(CardSwiperDirection.left);
+                    //   swiperController.swipe(CardSwiperDirection.left);
+                    //   return true;
+                    // }
                     return true;
                   }
                 },
                 cardBuilder:
                     (context, index, percentThresholdX, percentThresholdY) {
-                  final card = cards[index];
+                  final card = cardsLength > 1 ? cards[index] : cards[0];
                   return Align(
                     alignment: const Alignment(0, 1),
                     child: InkWell(
