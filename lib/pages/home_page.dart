@@ -3,6 +3,7 @@ import 'dart:isolate';
 import 'package:cards/pages/language_decks_page.dart';
 import 'package:cards/utils/country_to_language.dart';
 import 'package:cards/utils/manage_language_model.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:canopas_country_picker/canopas_country_picker.dart';
 import 'package:cards/models/database_helper.dart';
@@ -38,6 +39,30 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     _loadLanguages();
+
+    Future<void> checkNetworkAndPrompt(BuildContext context) async {
+      var connectivityResult = await Connectivity().checkConnectivity();
+      if (!connectivityResult.contains(ConnectivityResult.wifi)) {
+        context.mounted
+            ? showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text("Language downloading"),
+                  content: const Text(
+                      "At the moment only wifi is supported for language downloading, please connect to wifi for the download to continue. In the meantime you will not be able to use automatic translation."),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Ok"),
+                    ),
+                  ],
+                ),
+              )
+            : null;
+      }
+    }
+
+    checkNetworkAndPrompt(context);
 
     // Initialize the AnimationController
     _controller = AnimationController(
@@ -228,6 +253,9 @@ class _HomePageState extends State<HomePage>
                                     languageCode: newLang.code,
                                     languageName: newLang.name,
                                   ));
+                                  manageLanguageModel(
+                                      getLanguageCode(newLang.code),
+                                      ManageLanguageModelAction.DOWNLOAD);
                                   _loadLanguages();
                                 } catch (e) {
                                   Logger().e("Error inserting language: $e");

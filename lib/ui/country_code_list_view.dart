@@ -1,12 +1,7 @@
-import 'dart:isolate';
-
 import 'package:canopas_country_picker/canopas_country_picker.dart';
 import 'package:cards/utils/country_to_language.dart';
 import 'package:cards/utils/manage_language_model.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:google_mlkit_translation/google_mlkit_translation.dart';
-import 'package:logger/logger.dart';
 
 class CountryCodeListView extends StatelessWidget {
   final List<CountryCode> codes;
@@ -26,8 +21,6 @@ class CountryCodeListView extends StatelessWidget {
           title: Text(code.name),
           leading: Text(code.flag, style: const TextStyle(fontSize: 24)),
           onTap: () {
-            manageLanguageModel(
-                getLanguageCode(code.code), ManageLanguageModelAction.DOWNLOAD);
             Navigator.pop(context, code);
           },
         );

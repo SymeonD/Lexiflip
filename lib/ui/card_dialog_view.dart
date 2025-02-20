@@ -68,24 +68,21 @@ class _CardDialogViewState extends State<CardDialogView> {
           widget.languageCard!.localRomanization ?? "";
     }
     SharedPreferences.getInstance().then((prefs) {
-      nativeLanguage = prefs.getString('lantiveLanguageCode') ?? "fr";
+      nativeLanguage = prefs.getString('nativeLanguageCode') ?? "fr";
     });
-    localLanguage = getLanguageCode(widget.language.languageCode)!;
+    localLanguage = getLanguageCode(widget.language.languageCode);
 
-    // Check if language model is downloaded
-    languageModel
-        .isModelDownloaded(getLanguageCode(widget.language.languageCode)!)
-        .then((value) => {
-              setState(() {
-                isModelDownloaded = value;
-              })
-            });
+    languageModel.isModelDownloaded(localLanguage).then((value) => {
+          setState(() {
+            isModelDownloaded = value;
+          })
+        });
 
-    SharedPreferences.getInstance().then((prefs) {
-      nativeLanguage = prefs.getString('nativeLanguageCode')!;
-      languageModel.isModelDownloaded(nativeLanguage).then(
-          (value) => {Logger().d("Model $nativeLanguage downloaded: $value")});
-    });
+    languageModel.isModelDownloaded(localLanguage).then(
+        (value) => {Logger().d("Model $localLanguage downloaded: $value")});
+
+    languageModel.isModelDownloaded(nativeLanguage).then(
+        (value) => {Logger().d("Model $nativeLanguage downloaded: $value")});
 
     super.initState();
   }
