@@ -8,6 +8,7 @@ import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/language.dart';
 import 'package:cards/models/language_card.dart';
 import 'package:cards/models/language_deck.dart';
+import 'package:confetti/confetti.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
@@ -39,6 +40,9 @@ class _PlayPageState extends State<PlayPage> {
 
   int deleteOffset = 0;
 
+  // Confetti controller
+  late ConfettiController _controllerCenter;
+
   void _loadCards() async {
     try {
       final db = DatabaseHelper.instance;
@@ -59,6 +63,8 @@ class _PlayPageState extends State<PlayPage> {
   @override
   void initState() {
     super.initState();
+    _controllerCenter =
+        ConfettiController(duration: const Duration(seconds: 1));
     _loadCards(); // All front by default
     initTts();
   }
@@ -92,6 +98,8 @@ class _PlayPageState extends State<PlayPage> {
   @override
   void dispose() {
     swiperController.dispose();
+    _controllerCenter.dispose();
+    flutterTts.stop();
     super.dispose();
   }
 
@@ -142,9 +150,26 @@ class _PlayPageState extends State<PlayPage> {
                   SizedBox(height: MediaQuery.of(context).size.height / 4),
                   const Text(
                     "You finished the deck !",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 32),
+                  ConfettiWidget(
+                    confettiController: _controllerCenter,
+                    blastDirectionality: BlastDirectionality
+                        .explosive, // don't specify a direction, blast randomly
+                    shouldLoop:
+                        false, // start again as soon as the animation is finished
+                    emissionFrequency: 0.005,
+                    numberOfParticles: 100,
+                    // colors: const [
+                    //   Colors.green,
+                    //   Colors.blue,
+                    //   Colors.pink,
+                    //   Colors.orange,
+                    //   Colors.purple
+                    // ], // manually specify the colors to be used
+                    colors: const [Color(0xff1EA6C6), Color(0xffF4581B)],
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -213,6 +238,7 @@ class _PlayPageState extends State<PlayPage> {
                       } else {
                         cards
                             .clear(); // Ensure the last card is removed correctly
+                        _controllerCenter.play();
                       }
                       cardsLength = cards.length; // Update cardsLength properly
                     });
