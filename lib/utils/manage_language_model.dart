@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:isolate';
 
+import 'package:cards/main.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:logger/logger.dart';
@@ -11,18 +13,42 @@ void manageLanguageModel(
     String languageCode, ManageLanguageModelAction action) async {
   final receivePort = ReceivePort();
   final rootIsolateToken = RootIsolateToken.instance!;
-  Logger().d("Spawning isolate for $languageCode...");
 
   Isolate? isolate;
 
   receivePort.listen((message) {
     Logger().d(message);
+    // Close Snackbar when download is completed
+    scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+    // Show "Download Complete" for 500ms
+    scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
+      content: ManageLanguageModelAction.DOWNLOAD == action
+          ? const Text("Language downloaded ✅")
+          : const Text("Language deleted ✅"),
+      duration: const Duration(milliseconds: 1000),
+      action: SnackBarAction(
+        label: "Dismiss",
+        onPressed: () {
+          scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+        },
+      ),
+      behavior: SnackBarBehavior.floating,
+      margin: const EdgeInsets.only(
+        bottom: 20, // Adjust to control height from bottom
+        left: 20, // 5% margin on left
+        right: 20, // 5% margin on right
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12), // Rounded corners
+      ),
+    ));
     receivePort.close(); // Close the receive port after receiving the message
     isolate?.kill(priority: Isolate.immediate); // Kill the isolate
   });
 
   switch (action) {
     case ManageLanguageModelAction.DOWNLOAD:
+      showPersistentSnackbar("Downloading $languageCode language...");
       isolate = await Isolate.spawn(downloadLanguageModel, {
         'sendPort': receivePort.sendPort,
         'languageCode': languageCode,
@@ -31,6 +57,7 @@ void manageLanguageModel(
       break;
 
     case ManageLanguageModelAction.DELETE:
+      showPersistentSnackbar("Deleting $languageCode language...");
       isolate = await Isolate.spawn(deleteLanguageModel, {
         'sendPort': receivePort.sendPort,
         'languageCode': languageCode,
@@ -38,6 +65,28 @@ void manageLanguageModel(
       });
       break;
   }
+}
+
+void showPersistentSnackbar(String message) {
+  scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
+    content: Text(message),
+    duration: const Duration(days: 1), // Make it persist until dismissed
+    action: SnackBarAction(
+      label: "Dismiss",
+      onPressed: () {
+        scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+      },
+    ),
+    behavior: SnackBarBehavior.floating,
+    margin: const EdgeInsets.only(
+      bottom: 20, // Adjust to control height from bottom
+      left: 20, // 5% margin on left
+      right: 20, // 5% margin on right
+    ),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12), // Rounded corners
+    ),
+  ));
 }
 
 void downloadLanguageModel(Map<String, dynamic> args) async {

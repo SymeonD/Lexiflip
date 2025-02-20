@@ -4,7 +4,8 @@ import 'package:cards/pages/starting_page.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-int? initScreen;
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Cards',
+      scaffoldMessengerKey: scaffoldMessengerKey,
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -45,9 +47,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: nativeCountryCode == null
-          ? const StartingPage()
-          : const StartingPage(),
+      home: nativeCountryCode == null ? const StartingPage() : const HomePage(),
     );
   }
 }
