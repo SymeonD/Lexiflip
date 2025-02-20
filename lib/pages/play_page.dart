@@ -79,6 +79,13 @@ class _PlayPageState extends State<PlayPage> {
     });
   }
 
+  void _restartGame() {
+    setState(() {
+      _loadCards();
+      cards.shuffle();
+    });
+  }
+
   @override
   void dispose() {
     swiperController.dispose();
@@ -126,10 +133,54 @@ class _PlayPageState extends State<PlayPage> {
         ),
       ),
       body: cards.isEmpty
-          ? const Center(
-              child: Text(
-                "You finished the deck!",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ? Center(
+              child: Column(
+                children: [
+                  SizedBox(height: MediaQuery.of(context).size.height / 4),
+                  const Text(
+                    "You finished the deck !",
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Restart Button
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              fixedSize: const Size(75, 75),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20)),
+                              )),
+                          onPressed: () {
+                            _restartGame();
+                          },
+                          child: const Icon(
+                            Icons.restart_alt_rounded,
+                            size: 30,
+                          )),
+                      const SizedBox(width: 16),
+                      // Leave Button
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              fixedSize: const Size(75, 75),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20)),
+                              )),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: const Icon(
+                            Icons.logout_outlined,
+                            size: 30,
+                          )),
+                    ],
+                  ),
+                ],
               ),
             )
           : SizedBox(
@@ -168,12 +219,6 @@ class _PlayPageState extends State<PlayPage> {
                       return false;
                     }
                   } else {
-                    // If index is one before the last
-                    // if (currentIndex == cardsLength - 1) {
-                    //   swiperController.swipe(CardSwiperDirection.left);
-                    //   swiperController.swipe(CardSwiperDirection.left);
-                    //   return true;
-                    // }
                     return true;
                   }
                 },
@@ -225,19 +270,26 @@ class _PlayPageState extends State<PlayPage> {
           children: [
             // Add space between the row and text
             Align(
-              alignment: Alignment.topRight,
-              child: IconButton(
-                  onPressed: () {
-                    setState(() => hint = !hint);
-                  },
-                  icon: Icon(
-                    hint
-                        ? Icons.flashlight_off_outlined
-                        : Icons.flashlight_on_outlined,
-                    color: Colors.green.shade400,
-                    size: 40,
-                  )),
-            ),
+                alignment: Alignment.topRight,
+                child: (card!.nativeNote != null &&
+                        card.nativeNote!.trim().isNotEmpty)
+                    ? Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: IconButton(
+                            onPressed: () {
+                              setState(() => hint = !hint);
+                            },
+                            icon: Icon(
+                              hint
+                                  ? Icons.flashlight_off_outlined
+                                  : Icons.flashlight_on_outlined,
+                              color: Colors.green.shade400,
+                              size: 35,
+                            )),
+                      )
+                    : const SizedBox(
+                        height: 61,
+                      )),
             Center(
               child: Text(card!.nativeText,
                   style: const TextStyle(
