@@ -1,6 +1,4 @@
 import 'package:canopas_country_picker/canopas_country_picker.dart';
-import 'package:cards/utils/country_to_language.dart';
-import 'package:cards/utils/manage_language_model.dart';
 import 'package:flutter/material.dart';
 
 class CountryCodeListView extends StatelessWidget {

@@ -1,5 +1,3 @@
-import 'dart:isolate';
-
 import 'package:cards/pages/language_decks_page.dart';
 import 'package:cards/utils/country_to_language.dart';
 import 'package:cards/utils/manage_language_model.dart';
@@ -10,7 +8,6 @@ import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/language.dart';
 import 'package:cards/ui/country_code_list_view.dart';
 import 'package:country_flags/country_flags.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:logger/logger.dart';

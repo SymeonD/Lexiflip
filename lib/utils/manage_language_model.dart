@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:logger/logger.dart';
 
+// ignore: constant_identifier_names
 enum ManageLanguageModelAction { DOWNLOAD, DELETE }
 
 void manageLanguageModel(
