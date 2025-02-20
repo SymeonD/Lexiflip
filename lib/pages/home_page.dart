@@ -2,6 +2,7 @@ import 'dart:isolate';
 
 import 'package:cards/pages/language_decks_page.dart';
 import 'package:cards/utils/country_to_language.dart';
+import 'package:cards/utils/manage_language_model.dart';
 import 'package:flutter/material.dart';
 import 'package:canopas_country_picker/canopas_country_picker.dart';
 import 'package:cards/models/database_helper.dart';
@@ -80,24 +81,6 @@ class _HomePageState extends State<HomePage>
     _controller.forward(); // Start the shake animation
   }
 
-  static void deleteLanguageModel(Map<String, dynamic> args) async {
-    SendPort sendPort = args['sendPort'];
-    String languageCode = args['languageCode'];
-    RootIsolateToken rootIsolateToken = args['rootIsolateToken'];
-
-    try {
-      // Ensure platform channels work inside the isolate
-      BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
-
-      final languageModelManager = OnDeviceTranslatorModelManager();
-      await languageModelManager.deleteModel(getLanguageCode(languageCode)!);
-
-      sendPort.send("Deletion Completed for $languageCode");
-    } catch (e) {
-      sendPort.send("Deletion Failed: $e");
-    }
-  }
-
   void _showDeleteDialog() async {
     if (shakingLanguageCode == null) return;
 
@@ -105,22 +88,8 @@ class _HomePageState extends State<HomePage>
         languages.firstWhere((l) => l.languageCode == shakingLanguageCode);
 
     if (lang.languageCards == null || lang.languageCards!.isEmpty) {
-      final receivePort = ReceivePort();
-      final rootIsolateToken = RootIsolateToken.instance!;
-      Logger().d("Spawning isolate for deleting${lang.languageCode}...");
-
-      await Isolate.spawn(
-        deleteLanguageModel,
-        {
-          'sendPort': receivePort.sendPort,
-          'languageCode': lang.languageCode,
-          'rootIsolateToken': rootIsolateToken, // Pass the token
-        },
-      );
-
-      receivePort.listen((message) {
-        Logger().d(message);
-      });
+      manageLanguageModel(
+          getLanguageCode(lang.languageCode), ManageLanguageModelAction.DELETE);
       // Delete immediately if no cards exist
       await DatabaseHelper.instance.deleteLanguage(lang.languageId!);
       _loadLanguages();
@@ -144,22 +113,8 @@ class _HomePageState extends State<HomePage>
       );
 
       if (confirmDelete == true) {
-        final receivePort = ReceivePort();
-        final rootIsolateToken = RootIsolateToken.instance!;
-        Logger().d("Spawning isolate for deleting${lang.languageCode}...");
-
-        await Isolate.spawn(
-          deleteLanguageModel,
-          {
-            'sendPort': receivePort.sendPort,
-            'languageCode': lang.languageCode,
-            'rootIsolateToken': rootIsolateToken, // Pass the token
-          },
-        );
-
-        receivePort.listen((message) {
-          Logger().d(message);
-        });
+        manageLanguageModel(getLanguageCode(lang.languageCode),
+            ManageLanguageModelAction.DELETE);
 
         await DatabaseHelper.instance.deleteLanguage(lang.languageId!);
         _loadLanguages();

@@ -197,7 +197,7 @@ final Map<String, List<String>> countryToLanguageMap = {
 };
 
 // Create a function to get the language code for a country code
-String? getLanguageCode(String countryCode) {
+String getLanguageCode(String countryCode) {
   var value = countryToLanguageMap[countryCode] != null
       ? countryToLanguageMap[countryCode]!.first
       : 'en';
