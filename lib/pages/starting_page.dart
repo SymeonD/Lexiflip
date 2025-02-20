@@ -2,6 +2,8 @@ import 'package:canopas_country_picker/canopas_country_picker.dart';
 import 'package:cards/pages/home_page.dart';
 import 'package:cards/ui/country_code_list_view.dart';
 import 'package:cards/utils/country_to_language.dart';
+import 'package:cards/utils/show_app_settings_prompt.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
@@ -21,6 +23,28 @@ class _StartingPageState extends State<StartingPage> {
   late TextEditingController textEditingController;
 
   final languageModel = OnDeviceTranslatorModelManager();
+
+  Future<void> checkNetworkAndPrompt(BuildContext context) async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (!connectivityResult.contains(ConnectivityResult.wifi)) {
+      context.mounted
+          ? showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text("Language downloading"),
+                content: const Text(
+                    "At the moment only wifi is supported for language downloading, please connect to wifi for the download to continue. In the meantime you will not be able to use automatic translation."),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text("Ok"),
+                  ),
+                ],
+              ),
+            )
+          : null;
+    }
+  }
 
   @override
   void initState() {
@@ -112,6 +136,7 @@ class _StartingPageState extends State<StartingPage> {
                               prefs.setString("nativeLanguageCode",
                                   getLanguageCode(countryCode.code)!);
                               //TODO: Snackbar while model is downloading
+                              checkNetworkAndPrompt(context);
                               languageModel
                                   .downloadModel(
                                       getLanguageCode(countryCode.code)!)

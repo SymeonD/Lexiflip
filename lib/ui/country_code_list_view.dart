@@ -59,7 +59,7 @@ class CountryCodeListView extends StatelessWidget {
             receivePort.listen((message) {
               Logger().d(message);
             });
-            Navigator.pop(context, code);
+            context.mounted ? Navigator.pop(context, code) : null;
           },
         );
       },
