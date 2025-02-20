@@ -251,8 +251,10 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                               language: widget.language,
                                               languageDeck: widget.languageDeck,
                                             )))
-                                : showCustomSnackBar(context,
-                                    "This deck is empty, you can't play it", 2);
+                                : showCustomSnackBar(
+                                    context,
+                                    "This deck is empty, add cards to it to play",
+                                    2);
                           },
                           child: CustomPaint(
                             size: const Size(75, 150), // Adjust size as needed
