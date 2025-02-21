@@ -216,7 +216,19 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                           splashColor: Colors.transparent,
                           onTap: () {
                             //TODO: car mode
-                            showCustomSnackBar(context, "Coming soon", 2);
+                            _deckCardCount > 0
+                                ? Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => PlayPage(
+                                              language: widget.language,
+                                              languageDeck: widget.languageDeck,
+                                              carMode: true,
+                                            )))
+                                : showCustomSnackBar(
+                                    context,
+                                    "This deck is empty, add cards to it to play",
+                                    2);
                           },
                           child:
                               // Left side, car mode, blue

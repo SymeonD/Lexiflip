@@ -198,8 +198,8 @@ final Map<String, List<String>> countryToLanguageMap = {
 
 // Create a function to get the language code for a country code
 String getLanguageCode(String countryCode) {
-  var value = countryToLanguageMap[countryCode] != null
-      ? countryToLanguageMap[countryCode]!.first
+  var value = countryToLanguageMap[countryCode.toUpperCase()] != null
+      ? countryToLanguageMap[countryCode.toUpperCase()]!.first
       : 'en';
   // Check if it exists in the supported languages
   TranslateLanguage.values.firstWhere((element) => element.bcpCode == value,

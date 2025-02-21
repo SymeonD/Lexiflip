@@ -2,18 +2,21 @@
 // Get: cards
 // Out: deck
 
+import 'dart:async';
 import 'dart:math';
 
 import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/language.dart';
 import 'package:cards/models/language_card.dart';
 import 'package:cards/models/language_deck.dart';
+import 'package:cards/utils/country_to_language.dart';
 import 'package:confetti/confetti.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PlayPage extends StatefulWidget {
   const PlayPage(
@@ -40,16 +43,16 @@ class _PlayPageState extends State<PlayPage> {
 
   bool hint = false;
 
-  FlutterTts flutterTts = FlutterTts();
-
-  int deleteOffset = 0;
+  FlutterTts cardTts = FlutterTts();
+  String nativeTtsCode = 'en-Us';
+  String localTtsCode = 'en-Us';
 
   // Confetti controller
   late ConfettiController _controllerCenter;
 
   CardSwiperDirection swipeDirection = CardSwiperDirection.none;
 
-  void _loadCards() async {
+  Future<bool> _loadCards() async {
     try {
       final db = DatabaseHelper.instance;
       var cardList = await db.getCards(widget.languageDeck.languageDeckId!,
@@ -58,11 +61,14 @@ class _PlayPageState extends State<PlayPage> {
       // cardList.add(LanguageCard(languageId: 1, nativeText: "", localText: ""));
       setState(() {
         cards.addAll(cardList);
+        cards.shuffle();
         cardsLength = cards.length;
         cardFlipStates = List<bool>.filled(cardsLength, true);
       });
+      return true;
     } catch (e) {
       Logger().e("Error loading cards: $e");
+      return false;
     }
   }
 
@@ -71,20 +77,48 @@ class _PlayPageState extends State<PlayPage> {
     super.initState();
     _controllerCenter =
         ConfettiController(duration: const Duration(seconds: 1));
-    _loadCards(); // All front by default
-    initTts();
+    _loadCards().then((value) => {
+          initTts().then((value) =>
+              {widget.carMode ?? value && false ? playCarMode() : null})
+        });
   }
 
-  void initTts() {
-    flutterTts.setSpeechRate(0.4);
+  Future<bool> initTts() async {
+    cardTts.setSpeechRate(0.4);
 
-    // Loop through the flutterTts languages
-    flutterTts.getLanguages.then((languages) => {
-          languages.forEach((lang) =>
-              lang.contains(widget.language.languageCode)
-                  ? {flutterTts.setLanguage(lang)}
-                  : "")
+    Completer<void> completer = Completer();
+
+    // Set the tts
+    SharedPreferences.getInstance().then((prefs) => {
+          cardTts.getLanguages.then((languages) => {
+                languages.forEach((lang) => {
+                      lang.toString().split("-")[0] ==
+                              getLanguageCode(widget.language.languageCode)
+                          ? {
+                              localTtsCode = lang,
+                              Logger().i("Found : $lang for local")
+                            }
+                          : "",
+                      lang == "${getLanguageCode(prefs.getString("nativeLanguageCode")!)}-${prefs.getString("nativeLanguageCode")!.toUpperCase()}"
+                          ? {
+                              nativeTtsCode = lang,
+                              Logger().i("Found : $lang for native")
+                            }
+                          : "",
+                      // If both values are found, complete the future
+                      if ((localTtsCode != 'en-US' &&
+                              nativeTtsCode != 'en-US' &&
+                              !completer.isCompleted) ||
+                          ((languages.indexOf(lang) == languages.length - 1) &&
+                              !completer.isCompleted))
+                        {completer.complete()}
+                    })
+              })
         });
+
+    await completer.future;
+
+    return true;
   }
 
   void _toggleCardFlip(int index) {
@@ -95,24 +129,63 @@ class _PlayPageState extends State<PlayPage> {
 
   void _restartGame() {
     setState(() {
-      _loadCards();
-      cards.shuffle();
-      deleteOffset = 0;
+      _loadCards()
+          .then((value) => {widget.carMode ?? true ? playCarMode() : null});
     });
+  }
+
+  // Find a way to cancel
+  void playCarMode() {
+    // Auto play the cards
+    // For each card, say the native text with tts, wait for 2 seconds, then flip the card and say the local text with tts
+    // Then wait for 2 seconds and get to the next card, swiping to the right
+    Timer? timer;
+
+    void playNextCard() {
+      if (cards.isNotEmpty) {
+        Logger().i("Playing card ${cards[0]!.nativeText}");
+        // Set the language and speak the front card
+        cardTts.setLanguage(nativeTtsCode).then((value) => {
+              cardTts.speak(cards[0]!.nativeText).then((value) => {
+                    // Wait two seconds for answer
+                    Future.delayed(const Duration(seconds: 2), () {
+                      // Flip the card, set the language and speak back card
+                      _toggleCardFlip(0);
+                      cardTts.setLanguage(localTtsCode).then((value) => {
+                            cardTts.speak(cards[0]!.localText).then((value) => {
+                                  // Wait two seconds for answer
+                                  Future.delayed(const Duration(seconds: 2),
+                                      () {
+                                    // Swipe and restart
+                                    _toggleCardFlip(0);
+                                    swiperController
+                                        .swipe(CardSwiperDirection.right);
+                                    timer = Timer(const Duration(seconds: 1),
+                                        () => playNextCard());
+                                  })
+                                })
+                          });
+                    })
+                  })
+            });
+      } else {
+        timer?.cancel();
+      }
+    }
+
+    playNextCard();
   }
 
   @override
   void dispose() {
     swiperController.dispose();
     _controllerCenter.dispose();
-    flutterTts.stop();
+    cardTts.stop();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    String horizontalDirectionSwiped;
-
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -233,9 +306,7 @@ class _PlayPageState extends State<PlayPage> {
                                 ? 0.4
                                 : 0, // Animated radius
                             colors: [
-                              swipeDirection == CardSwiperDirection.left
-                                  ? Colors.red
-                                  : Theme.of(context).colorScheme.surface,
+                              Colors.red,
                               Theme.of(context)
                                   .colorScheme
                                   .surface, // Ensure smooth fade-out
@@ -255,9 +326,7 @@ class _PlayPageState extends State<PlayPage> {
                                 ? 0.4
                                 : 0, // Animated radius
                             colors: [
-                              swipeDirection == CardSwiperDirection.right
-                                  ? Colors.green
-                                  : Theme.of(context).colorScheme.surface,
+                              Colors.green,
                               Theme.of(context)
                                   .colorScheme
                                   .surface, // Ensure smooth fade-out
@@ -290,6 +359,7 @@ class _PlayPageState extends State<PlayPage> {
                         }
                     },
 
+                    // After the swipe is finished
                     onSwipe: (previousIndex, currentIndex, direction) {
                       setState(() {
                         // Reset current flip state
@@ -299,6 +369,7 @@ class _PlayPageState extends State<PlayPage> {
                         // Reset face
                         cardFlipStates[previousIndex] = true;
                       });
+
                       if (direction == CardSwiperDirection.right) {
                         setState(() {
                           if (cards.length > 1) {
@@ -317,6 +388,8 @@ class _PlayPageState extends State<PlayPage> {
                         return true;
                       }
                     },
+
+                    // While building
                     cardBuilder:
                         (context, index, percentThresholdX, percentThresholdY) {
                       int distanceToIndex = index - cardsLength + 1;
@@ -434,8 +507,9 @@ class _PlayPageState extends State<PlayPage> {
               child: IconButton(
                   onPressed: () {
                     try {
-                      flutterTts.setLanguage('en-US');
-                      flutterTts.speak(card!.localText);
+                      Logger().i("Language: $localTtsCode");
+                      cardTts.setLanguage(localTtsCode);
+                      cardTts.speak(card!.localText);
                     } catch (e) {
                       Logger().e("Error speaking: $e");
                     }
