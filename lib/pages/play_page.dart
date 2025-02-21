@@ -17,9 +17,13 @@ import 'package:logger/logger.dart';
 
 class PlayPage extends StatefulWidget {
   const PlayPage(
-      {super.key, required this.languageDeck, required this.language});
+      {super.key,
+      required this.languageDeck,
+      required this.language,
+      this.carMode});
   final LanguageDeck languageDeck;
   final Language language;
+  final bool? carMode;
 
   @override
   State<PlayPage> createState() => _PlayPageState();
@@ -161,13 +165,6 @@ class _PlayPageState extends State<PlayPage> {
                         false, // start again as soon as the animation is finished
                     emissionFrequency: 0.005,
                     numberOfParticles: 100,
-                    // colors: const [
-                    //   Colors.green,
-                    //   Colors.blue,
-                    //   Colors.pink,
-                    //   Colors.orange,
-                    //   Colors.purple
-                    // ], // manually specify the colors to be used
                     colors: const [Color(0xff1EA6C6), Color(0xffF4581B)],
                   ),
                   Row(

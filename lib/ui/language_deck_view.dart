@@ -101,9 +101,12 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                             context: context,
                             builder: (BuildContext context) {
                               return AlertDialog(
-                                title: const Text("Delete deck"),
+                                title: const Text("Delete deck",
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold)),
                                 content: const Text(
-                                    "Are you sure you want to delete this deck?"),
+                                    "This deck contains cards, are you sure you want to delete it ?"),
                                 actions: [
                                   TextButton(
                                     onPressed: () {
@@ -119,7 +122,8 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                       widget.onDelete();
                                       Navigator.of(context).pop();
                                     },
-                                    child: const Text("Delete"),
+                                    child: const Text("Delete",
+                                        style: TextStyle(color: Colors.red)),
                                   ),
                                 ],
                               );
@@ -224,12 +228,10 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                 width: 75,
                               ),
                               Positioned(
-                                top: 50,
+                                top: 53,
                                 left: 13,
-                                child: Icon(
-                                    Icons.directions_car_filled_outlined,
-                                    color: Colors.white,
-                                    size: 50),
+                                child: Icon(Icons.auto_stories_outlined,
+                                    color: Colors.white, size: 45),
                               ),
                             ]),
                           ),
@@ -278,10 +280,10 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                   ],
                 ),
               ),
-              const SizedBox(height: 25), // Add space between the row and text
+              const SizedBox(height: 20), // Add space between the row and text
               Text(widget.languageDeck.languageDeckName,
                   style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold)),
+                      fontSize: 18, fontWeight: FontWeight.bold)),
               Text("$_deckCardCount card${_deckCardCount > 1 ? "s" : ""}"),
             ],
           ),
