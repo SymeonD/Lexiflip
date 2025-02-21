@@ -47,6 +47,8 @@ class _PlayPageState extends State<PlayPage> {
   // Confetti controller
   late ConfettiController _controllerCenter;
 
+  CardSwiperDirection swipeDirection = CardSwiperDirection.none;
+
   void _loadCards() async {
     try {
       final db = DatabaseHelper.instance;
@@ -109,6 +111,8 @@ class _PlayPageState extends State<PlayPage> {
 
   @override
   Widget build(BuildContext context) {
+    String horizontalDirectionSwiped;
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -208,75 +212,148 @@ class _PlayPageState extends State<PlayPage> {
                 ],
               ),
             )
-          : SizedBox(
-              height: 400,
-              child: CardSwiper(
-                backCardOffset: const Offset(0, 30),
-                cardsCount: cardsLength,
-                numberOfCardsDisplayed: cardsLength > 1 ? 2 : 1,
-                // isDisabled: cardsLength <= 2,
-                controller: swiperController,
-                // isLoop: false,
-                allowedSwipeDirection:
-                    const AllowedSwipeDirection.symmetric(horizontal: true),
-                onSwipe: (previousIndex, currentIndex, direction) {
-                  setState(() {
-                    // Reset current flip state
-                    currentFlipState = true;
-                    // Reset hint state
-                    hint = false;
-                    // Reset face
-                    cardFlipStates[previousIndex] = true;
-                  });
-                  if (direction == CardSwiperDirection.right) {
-                    setState(() {
-                      if (cards.length > 1) {
-                        cards.removeAt(previousIndex);
-                      } else {
-                        cards
-                            .clear(); // Ensure the last card is removed correctly
-                        _controllerCenter.play();
-                      }
-                      cardsLength = cards.length; // Update cardsLength properly
-                    });
-                    return previousIndex == cardsLength ? true : false;
-                    // }
-                  } else {
-                    return true;
-                  }
-                },
-                cardBuilder:
-                    (context, index, percentThresholdX, percentThresholdY) {
-                  int distanceToIndex = index - cardsLength + 1;
-                  index = distanceToIndex > 0 ? index - distanceToIndex : index;
-                  Logger().i(
-                      "Current index: $index, Cards remaining: $cardsLength");
-                  final card = cards[index];
-                  return Align(
-                    alignment: const Alignment(0, 1),
-                    child: InkWell(
-                      splashColor: Colors.transparent,
-                      onTap: () => {
-                        _toggleCardFlip(index),
-                        currentFlipState = !currentFlipState
-                      },
-                      child: AnimatedSwitcher(
-                        key: ValueKey<int>(index),
-                        duration: const Duration(milliseconds: 500),
-                        transitionBuilder: __transitionBuilder,
-                        switchInCurve: Curves.easeOutBack,
-                        switchOutCurve: Curves.easeOutBack.flipped,
-                        child: KeyedSubtree(
-                          key: ValueKey<bool>(cardFlipStates[index]),
-                          child: cardFlipStates[index]
-                              ? _buildFront(card)
-                              : _buildBack(card),
+          : Stack(
+              children: [
+                // Glowing half circle at the right side
+                Positioned(
+                  top: 50,
+                  right: swipeDirection == CardSwiperDirection.right ? 0 : null,
+                  left: swipeDirection == CardSwiperDirection.left ? 0 : null,
+                  child: Row(
+                    children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        width: MediaQuery.of(context).size.width,
+                        height: 475,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.rectangle,
+                          gradient: RadialGradient(
+                            center: Alignment.centerLeft, // Static center
+                            radius: swipeDirection == CardSwiperDirection.left
+                                ? 0.4
+                                : 0, // Animated radius
+                            colors: [
+                              swipeDirection == CardSwiperDirection.left
+                                  ? Colors.red
+                                  : Theme.of(context).colorScheme.surface,
+                              Theme.of(context)
+                                  .colorScheme
+                                  .surface, // Ensure smooth fade-out
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        width: MediaQuery.of(context).size.width,
+                        height: 475,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.rectangle,
+                          gradient: RadialGradient(
+                            center: Alignment.centerRight, // Static center
+                            radius: swipeDirection == CardSwiperDirection.right
+                                ? 0.4
+                                : 0, // Animated radius
+                            colors: [
+                              swipeDirection == CardSwiperDirection.right
+                                  ? Colors.green
+                                  : Theme.of(context).colorScheme.surface,
+                              Theme.of(context)
+                                  .colorScheme
+                                  .surface, // Ensure smooth fade-out
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 400,
+                  child: CardSwiper(
+                    backCardOffset: const Offset(0, 30),
+                    cardsCount: cardsLength,
+                    numberOfCardsDisplayed: cardsLength > 1 ? 2 : 1,
+                    // isDisabled: cardsLength <= 2,
+                    controller: swiperController,
+                    // isLoop: false,
+                    allowedSwipeDirection:
+                        const AllowedSwipeDirection.symmetric(horizontal: true),
+                    onSwipeDirectionChange:
+                        (horizontalDirection, verticalDirection) => {
+                      // Update swipe direction here to handle the gradient color change dynamically
+                      if (horizontalDirection != swipeDirection)
+                        {
+                          setState(() {
+                            swipeDirection = horizontalDirection;
+                          })
+                        }
+                    },
+
+                    onSwipe: (previousIndex, currentIndex, direction) {
+                      setState(() {
+                        // Reset current flip state
+                        currentFlipState = true;
+                        // Reset hint state
+                        hint = false;
+                        // Reset face
+                        cardFlipStates[previousIndex] = true;
+                      });
+                      if (direction == CardSwiperDirection.right) {
+                        setState(() {
+                          if (cards.length > 1) {
+                            cards.removeAt(previousIndex);
+                          } else {
+                            cards
+                                .clear(); // Ensure the last card is removed correctly
+                            _controllerCenter.play();
+                          }
+                          cardsLength =
+                              cards.length; // Update cardsLength properly
+                        });
+                        return previousIndex == cardsLength ? true : false;
+                        // }
+                      } else {
+                        return true;
+                      }
+                    },
+                    cardBuilder:
+                        (context, index, percentThresholdX, percentThresholdY) {
+                      int distanceToIndex = index - cardsLength + 1;
+                      index =
+                          distanceToIndex > 0 ? index - distanceToIndex : index;
+                      final card = cards[index];
+
+                      return Align(
+                        alignment: const Alignment(0, 1),
+                        child: InkWell(
+                          splashColor: Colors.transparent,
+                          onTap: () => {
+                            _toggleCardFlip(index),
+                            currentFlipState = !currentFlipState
+                          },
+                          child: AnimatedSwitcher(
+                            key: ValueKey<int>(index),
+                            duration: const Duration(milliseconds: 500),
+                            transitionBuilder: __transitionBuilder,
+                            switchInCurve: Curves.easeOutBack,
+                            switchOutCurve: Curves.easeOutBack.flipped,
+                            child: KeyedSubtree(
+                              key: ValueKey<bool>(cardFlipStates[index]),
+                              child: cardFlipStates[index]
+                                  ? _buildFront(card)
+                                  : _buildBack(card),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(
+                  height: double.infinity,
+                )
+              ],
             ),
     );
   }
