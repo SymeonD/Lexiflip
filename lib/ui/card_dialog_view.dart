@@ -1,3 +1,4 @@
+import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/language.dart';
 import 'package:cards/models/language_card.dart';
@@ -164,20 +165,29 @@ class _CardDialogViewState extends State<CardDialogView> {
                             child: Column(
                               children: [
                                 Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     SizedBox(
                                       width: MediaQuery.of(context).size.width -
                                           120,
-                                      child: TextField(
+                                      // Native text
+                                      child: AutoSizeTextField(
                                         textCapitalization:
                                             TextCapitalization.sentences,
                                         controller: nativeTextController,
+                                        minFontSize: 20,
+                                        minLines: 1,
+                                        maxLines: 2,
+                                        maxLength: 50,
                                         style: const TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w500,
                                           color: Colors.black,
                                         ),
                                         decoration: const InputDecoration(
+                                            counterStyle: TextStyle(
+                                              height: 0.1,
+                                            ),
                                             hintText: 'This card\'s word',
                                             hintStyle: TextStyle(
                                                 fontSize: 24,
@@ -191,6 +201,7 @@ class _CardDialogViewState extends State<CardDialogView> {
                                       ),
                                     ),
                                     IconButton(
+                                      padding: const EdgeInsets.only(top: 16),
                                       icon:
                                           const Icon(Icons.translate_outlined),
                                       color: Colors.black54,
@@ -219,7 +230,13 @@ class _CardDialogViewState extends State<CardDialogView> {
                                     )
                                   ],
                                 ),
-                                TextField(
+                                const Spacer(),
+                                // Hint
+                                AutoSizeTextField(
+                                  maxLines: 3,
+                                  minLines: 1,
+                                  maxLength: 100,
+                                  minFontSize: 16,
                                   textCapitalization:
                                       TextCapitalization.sentences,
                                   controller: nativeNoteController,
@@ -229,6 +246,9 @@ class _CardDialogViewState extends State<CardDialogView> {
                                     color: Colors.black54,
                                   ),
                                   decoration: const InputDecoration(
+                                      contentPadding: EdgeInsets.only(
+                                          top: 16, left: 16, right: 16),
+                                      counter: Offstage(),
                                       hintText: 'More details or a hint',
                                       hintStyle: TextStyle(
                                           fontSize: 16,
@@ -239,7 +259,10 @@ class _CardDialogViewState extends State<CardDialogView> {
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(12)),
                                       )),
-                                )
+                                ),
+                                const Spacer(
+                                  flex: 2,
+                                ),
                               ],
                             ))),
                   ),
@@ -269,18 +292,26 @@ class _CardDialogViewState extends State<CardDialogView> {
                             ),
                             child: Column(
                               children: [
-                                TextField(
+                                // Local text
+                                AutoSizeTextField(
                                   textCapitalization:
                                       TextCapitalization.sentences,
                                   controller: localTextController,
+                                  minFontSize: 20,
+                                  minLines: 1,
+                                  maxLines: 2,
+                                  maxLength: 50,
                                   style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w500,
                                     color: Colors.white,
                                   ),
-                                  cursorColor: Colors.white,
                                   decoration: const InputDecoration(
-                                      hintText: 'This card\'s translation',
+                                      counterStyle: TextStyle(
+                                        color: Colors.white54,
+                                        height: 0.1,
+                                      ),
+                                      hintText: 'This card\'s word',
                                       hintStyle: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w500,
@@ -291,7 +322,13 @@ class _CardDialogViewState extends State<CardDialogView> {
                                             Radius.circular(12)),
                                       )),
                                 ),
-                                TextField(
+                                const Spacer(),
+                                // Romanization
+                                AutoSizeTextField(
+                                  maxLines: 3,
+                                  minLines: 1,
+                                  maxLength: 100,
+                                  minFontSize: 16,
                                   textCapitalization:
                                       TextCapitalization.sentences,
                                   controller: localRomanizationController,
@@ -302,6 +339,12 @@ class _CardDialogViewState extends State<CardDialogView> {
                                   ),
                                   cursorColor: Colors.white,
                                   decoration: const InputDecoration(
+                                      contentPadding: EdgeInsets.only(
+                                        top: 16,
+                                        left: 16,
+                                        right: 16,
+                                      ),
+                                      counter: Offstage(),
                                       hintText: 'Romanization',
                                       hintStyle: TextStyle(
                                           fontSize: 16,
@@ -312,6 +355,9 @@ class _CardDialogViewState extends State<CardDialogView> {
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(12)),
                                       )),
+                                ),
+                                const Spacer(
+                                  flex: 2,
                                 ),
                               ],
                             ),
