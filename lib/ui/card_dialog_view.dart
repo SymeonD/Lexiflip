@@ -7,6 +7,7 @@ import 'package:cards/utils/country_to_language.dart';
 import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -179,6 +180,11 @@ class _CardDialogViewState extends State<CardDialogView> {
                                         minLines: 1,
                                         maxLines: 2,
                                         maxLength: 50,
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.deny(
+                                              RegExp(r"\n"))
+                                        ],
+                                        textInputAction: TextInputAction.done,
                                         style: const TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w500,
@@ -245,6 +251,11 @@ class _CardDialogViewState extends State<CardDialogView> {
                                     fontWeight: FontWeight.w500,
                                     color: Colors.black54,
                                   ),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.deny(
+                                        RegExp(r"\n"))
+                                  ],
+                                  textInputAction: TextInputAction.done,
                                   decoration: const InputDecoration(
                                       contentPadding: EdgeInsets.only(
                                           top: 16, left: 16, right: 16),
@@ -306,6 +317,11 @@ class _CardDialogViewState extends State<CardDialogView> {
                                     fontWeight: FontWeight.w500,
                                     color: Colors.white,
                                   ),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.deny(
+                                        RegExp(r"\n"))
+                                  ],
+                                  textInputAction: TextInputAction.done,
                                   decoration: const InputDecoration(
                                       counterStyle: TextStyle(
                                         color: Colors.white54,
@@ -337,6 +353,11 @@ class _CardDialogViewState extends State<CardDialogView> {
                                     fontWeight: FontWeight.w500,
                                     color: Colors.white70,
                                   ),
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.deny(
+                                        RegExp(r"\n"))
+                                  ],
+                                  textInputAction: TextInputAction.done,
                                   cursorColor: Colors.white,
                                   decoration: const InputDecoration(
                                       contentPadding: EdgeInsets.only(

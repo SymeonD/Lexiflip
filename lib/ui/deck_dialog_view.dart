@@ -125,14 +125,16 @@ class _DeckDialogViewState extends State<DeckDialogView> {
           children: [
             const SizedBox(height: 10),
             SearchBarView(
-                searchController: deckNameController,
-                hintText: widget.languageDeck != null
-                    ? widget.languageDeck!.languageDeckName
-                    : 'What is this deck about ?'),
-            const SizedBox(height: 16),
+              searchController: deckNameController,
+              hintText: widget.languageDeck != null
+                  ? widget.languageDeck!.languageDeckName
+                  : 'What is this deck about ?',
+              icon: Icons.book_outlined,
+              inputMaxLength: 20,
+            ),
             const SizedBox(
                 width: 150, child: Divider(height: 1, color: Colors.grey)),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             SearchBarView(
                 searchController: searchController,
                 hintText: widget.languageDeck != null
