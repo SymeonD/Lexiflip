@@ -145,6 +145,7 @@ class _PlayPageState extends State<PlayPage> {
       if (cards.isNotEmpty) {
         Logger().i("Playing card ${cards[0]!.nativeText}");
 
+        // TODO: Check if wait for speak to finish before next one
         cardTts.setLanguage(nativeTtsCode).then((_) {
           if (!mounted) return;
           cardTts.speak(cards[0]!.nativeText).then((_) {

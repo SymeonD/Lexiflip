@@ -111,7 +111,6 @@ class _StartingPageState extends State<StartingPage> {
                               //TODO: Snackbar error when getLanguageCode returns 'en' because unknown
                               prefs.setString("nativeLanguageCode",
                                   getLanguageCode(countryCode.code));
-                              //TODO: Snackbar while model is downloading
                             }),
                             manageLanguageModel(
                                 getLanguageCode(countryCode.code),

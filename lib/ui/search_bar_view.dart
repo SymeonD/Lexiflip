@@ -24,7 +24,7 @@ class _SearchBarViewState extends State<SearchBarView> {
     return TextField(
       textCapitalization: TextCapitalization.sentences,
       controller: widget.searchController,
-      maxLength: widget.inputMaxLength ?? null,
+      maxLength: widget.inputMaxLength,
       decoration: InputDecoration(
           prefixIcon: Icon(
             widget.icon ?? Icons.search_outlined,

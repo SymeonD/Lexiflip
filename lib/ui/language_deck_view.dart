@@ -216,7 +216,6 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                         child: InkWell(
                           splashColor: Colors.transparent,
                           onTap: () {
-                            //TODO: car mode
                             _deckCardCount > 0
                                 ? Navigator.push(
                                     context,

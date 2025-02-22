@@ -144,7 +144,6 @@ class _LanguageCardPageState extends State<LanguageCardPage> {
                     return InkWell(
                       splashColor: Colors.transparent,
                       onTap: () async {
-                        // TODO: open card edit view, replace this body
                         Navigator.push(
                             context,
                             MaterialPageRoute(

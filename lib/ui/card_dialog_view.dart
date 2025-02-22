@@ -215,7 +215,6 @@ class _CardDialogViewState extends State<CardDialogView> {
                                       onPressed: () {
                                         Logger().i(
                                             "Translate from $nativeLanguage to $localLanguage : ${widget.language.languageName}");
-                                        //TODO: Translate the text
                                         isModelDownloaded
                                             ? translateText(
                                                     nativeTextController.text,
