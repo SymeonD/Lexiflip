@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/language.dart';
 import 'package:cards/models/language_card.dart';
@@ -446,42 +447,51 @@ class _PlayPageState extends State<PlayPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Add space between the row and text
-            Align(
-                alignment: Alignment.topRight,
-                child: (card!.nativeNote != null &&
-                        card.nativeNote!.trim().isNotEmpty)
-                    ? Padding(
-                        padding: const EdgeInsets.all(5.0),
-                        child: IconButton(
-                            onPressed: () {
-                              setState(() => hint = !hint);
-                            },
-                            icon: Icon(
-                              hint
-                                  ? Icons.flashlight_off_outlined
-                                  : Icons.flashlight_on_outlined,
-                              color: Colors.green.shade400,
-                              size: 35,
-                            )),
-                      )
-                    : const SizedBox(
-                        height: 61,
-                      )),
+            (card!.nativeNote != null && card.nativeNote!.trim().isNotEmpty)
+                ? Align(
+                    alignment: Alignment.topRight,
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: IconButton(
+                          onPressed: () {
+                            setState(() => hint = !hint);
+                          },
+                          icon: Icon(
+                            hint
+                                ? Icons.flashlight_off_outlined
+                                : Icons.flashlight_on_outlined,
+                            color: Colors.green.shade400,
+                            size: 35,
+                          )),
+                    ))
+                : const Spacer(),
             Center(
-              child: Text(card.nativeText,
-                  style: const TextStyle(
-                      fontSize: 32, fontWeight: FontWeight.bold)),
+              child: SizedBox(
+                width: 300,
+                child: AutoSizeText(card.nativeText,
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                    maxFontSize: hint ? 20 : 32,
+                    style: const TextStyle(
+                        fontSize: 32, fontWeight: FontWeight.bold)),
+              ),
             ),
             const SizedBox(height: 10),
             hint
                 ? Center(
-                    child: Text(card.nativeNote ?? "",
-                        style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54)),
+                    child: SizedBox(
+                      width: 300,
+                      height: 50,
+                      child: AutoSizeText(card.nativeNote ?? "",
+                          maxLines: 2,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black54)),
+                    ),
                   )
-                : Container(),
+                : const Spacer(),
           ],
         ),
       ),
@@ -522,22 +532,34 @@ class _PlayPageState extends State<PlayPage> {
             ),
             // Add space between the row and text
             Center(
-              child: Text(card!.localText,
-                  style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white)),
+              child: SizedBox(
+                width: 300,
+                child: AutoSizeText(card!.localText,
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize:
+                            card.localRomanization?.trim() != "" ? 20 : 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white)),
+              ),
             ),
             const SizedBox(height: 10),
-            card.localRomanization != null
+            card.localRomanization?.trim() != ""
                 ? Center(
-                    child: Text(card.localRomanization!,
-                        style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white60)),
+                    child: SizedBox(
+                      width: 300,
+                      height: 50,
+                      child: AutoSizeText(card.localRomanization!,
+                          maxLines: 2,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white60)),
+                    ),
                   )
-                : Container(),
+                : const Spacer(),
           ],
         ),
       ),
