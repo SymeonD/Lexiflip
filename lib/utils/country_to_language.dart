@@ -1,3 +1,5 @@
+import 'package:cards/utils/show_custom_snackbar.dart';
+import 'package:flutter/material.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 
 final Map<String, List<String>> countryToLanguageMap = {
@@ -197,10 +199,14 @@ final Map<String, List<String>> countryToLanguageMap = {
 };
 
 // Create a function to get the language code for a country code
-String getLanguageCode(String countryCode) {
+String getLanguageCode(String countryCode, BuildContext context) {
   var value = countryToLanguageMap[countryCode.toUpperCase()] != null
       ? countryToLanguageMap[countryCode.toUpperCase()]!.first
       : 'en';
+  countryToLanguageMap[countryCode.toUpperCase()] == null
+      ? showCustomSnackBar(
+          context, "Language not supported, defaulted to english", 2)
+      : null;
   // Check if it exists in the supported languages
   TranslateLanguage.values.firstWhere((element) => element.bcpCode == value,
       orElse: () => TranslateLanguage.english);

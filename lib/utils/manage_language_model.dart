@@ -5,7 +5,6 @@ import 'package:cards/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
-import 'package:logger/logger.dart';
 
 // ignore: constant_identifier_names
 enum ManageLanguageModelAction { DOWNLOAD, DELETE }
@@ -18,7 +17,6 @@ void manageLanguageModel(
   Isolate? isolate;
 
   receivePort.listen((message) {
-    Logger().d(message);
     // Close Snackbar when download is completed
     scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
     // Show "Download Complete" for 500ms

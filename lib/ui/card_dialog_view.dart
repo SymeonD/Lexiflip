@@ -72,7 +72,7 @@ class _CardDialogViewState extends State<CardDialogView> {
     SharedPreferences.getInstance().then((prefs) {
       nativeLanguage = prefs.getString('nativeLanguageCode') ?? "fr";
     });
-    localLanguage = getLanguageCode(widget.language.languageCode);
+    localLanguage = getLanguageCode(widget.language.languageCode, context);
 
     languageModel.isModelDownloaded(localLanguage).then((value) => {
           setState(() {
@@ -213,8 +213,6 @@ class _CardDialogViewState extends State<CardDialogView> {
                                       color: Colors.black54,
                                       iconSize: 30,
                                       onPressed: () {
-                                        Logger().i(
-                                            "Translate from $nativeLanguage to $localLanguage : ${widget.language.languageName}");
                                         isModelDownloaded
                                             ? translateText(
                                                     nativeTextController.text,

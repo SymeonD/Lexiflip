@@ -88,7 +88,7 @@ class _PlayPageState extends State<PlayPage> {
 
   Future<bool> initTts() async {
     cardTts.setSpeechRate(0.4);
-
+    cardTts.awaitSpeakCompletion(true);
     Completer<void> completer = Completer();
 
     // Set the tts
@@ -96,13 +96,14 @@ class _PlayPageState extends State<PlayPage> {
           cardTts.getLanguages.then((languages) => {
                 languages.forEach((lang) => {
                       lang.toString().split("-")[0] ==
-                              getLanguageCode(widget.language.languageCode)
+                              getLanguageCode(
+                                  widget.language.languageCode, context)
                           ? {
                               localTtsCode = lang,
                               Logger().i("Found : $lang for local")
                             }
                           : "",
-                      lang == "${getLanguageCode(prefs.getString("nativeLanguageCode")!)}-${prefs.getString("nativeLanguageCode")!.toUpperCase()}"
+                      lang == "${getLanguageCode(prefs.getString("nativeLanguageCode")!, context)}-${prefs.getString("nativeLanguageCode")!.toUpperCase()}"
                           ? {
                               nativeTtsCode = lang,
                               Logger().i("Found : $lang for native")
@@ -141,23 +142,19 @@ class _PlayPageState extends State<PlayPage> {
   void playCarMode() {
     void playNextCard() {
       if (!mounted) return; // Do nothing if widget is disposed
-
       if (cards.isNotEmpty) {
-        Logger().i("Playing card ${cards[0]!.nativeText}");
-
-        // TODO: Check if wait for speak to finish before next one
         cardTts.setLanguage(nativeTtsCode).then((_) {
           if (!mounted) return;
           cardTts.speak(cards[0]!.nativeText).then((_) {
             if (!mounted) return;
-            Future.delayed(const Duration(seconds: 2), () {
+            Future.delayed(const Duration(seconds: 3), () {
               if (!mounted) return;
               _toggleCardFlip(0);
               cardTts.setLanguage(localTtsCode).then((_) {
                 if (!mounted) return;
                 cardTts.speak(cards[0]!.localText).then((_) {
                   if (!mounted) return;
-                  Future.delayed(const Duration(seconds: 2), () {
+                  Future.delayed(const Duration(seconds: 3), () {
                     if (!mounted) return;
                     _toggleCardFlip(0);
                     swiperController.swipe(CardSwiperDirection.right);
@@ -518,7 +515,6 @@ class _PlayPageState extends State<PlayPage> {
               child: IconButton(
                   onPressed: () {
                     try {
-                      Logger().i("Language: $localTtsCode");
                       cardTts.setLanguage(localTtsCode);
                       cardTts.speak(card!.localText);
                     } catch (e) {

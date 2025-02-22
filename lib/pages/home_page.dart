@@ -117,8 +117,8 @@ class _HomePageState extends State<HomePage>
         languages.firstWhere((l) => l.languageCode == shakingLanguageCode);
 
     if (lang.languageCards == null || lang.languageCards!.isEmpty) {
-      manageLanguageModel(
-          getLanguageCode(lang.languageCode), ManageLanguageModelAction.DELETE);
+      manageLanguageModel(getLanguageCode(lang.languageCode, context),
+          ManageLanguageModelAction.DELETE);
       // Delete immediately if no cards exist
       await DatabaseHelper.instance.deleteLanguage(lang.languageId!);
       _loadLanguages();
@@ -142,7 +142,7 @@ class _HomePageState extends State<HomePage>
       );
 
       if (confirmDelete == true) {
-        manageLanguageModel(getLanguageCode(lang.languageCode),
+        manageLanguageModel(getLanguageCode(lang.languageCode, context),
             ManageLanguageModelAction.DELETE);
 
         await DatabaseHelper.instance.deleteLanguage(lang.languageId!);
@@ -258,7 +258,7 @@ class _HomePageState extends State<HomePage>
                                     languageName: newLang.name,
                                   ));
                                   manageLanguageModel(
-                                      getLanguageCode(newLang.code),
+                                      getLanguageCode(newLang.code, context),
                                       ManageLanguageModelAction.DOWNLOAD);
                                   _loadLanguages();
                                 } catch (e) {
