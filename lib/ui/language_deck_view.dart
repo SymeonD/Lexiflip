@@ -1,3 +1,4 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/language.dart';
 import 'package:cards/models/language_deck.dart';
@@ -293,9 +294,15 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                 ),
               ),
               const SizedBox(height: 20), // Add space between the row and text
-              Text(widget.languageDeck.languageDeckName,
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold)),
+              SizedBox(
+                width: 150,
+                child: Center(
+                  child: AutoSizeText(widget.languageDeck.languageDeckName,
+                      maxLines: 1,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
+                ),
+              ),
               Text("$_deckCardCount card${_deckCardCount > 1 ? "s" : ""}"),
             ],
           ),
