@@ -53,6 +53,8 @@ class _PlayPageState extends State<PlayPage> {
 
   CardSwiperDirection swipeDirection = CardSwiperDirection.none;
 
+  Timer? _playCarModeTimer;
+
   Future<bool> _loadCards() async {
     try {
       final db = DatabaseHelper.instance;
@@ -137,40 +139,37 @@ class _PlayPageState extends State<PlayPage> {
 
   // Find a way to cancel
   void playCarMode() {
-    // Auto play the cards
-    // For each card, say the native text with tts, wait for 2 seconds, then flip the card and say the local text with tts
-    // Then wait for 2 seconds and get to the next card, swiping to the right
-    Timer? timer;
-
     void playNextCard() {
+      if (!mounted) return; // Do nothing if widget is disposed
+
       if (cards.isNotEmpty) {
         Logger().i("Playing card ${cards[0]!.nativeText}");
-        // Set the language and speak the front card
-        cardTts.setLanguage(nativeTtsCode).then((value) => {
-              cardTts.speak(cards[0]!.nativeText).then((value) => {
-                    // Wait two seconds for answer
-                    Future.delayed(const Duration(seconds: 2), () {
-                      // Flip the card, set the language and speak back card
-                      _toggleCardFlip(0);
-                      cardTts.setLanguage(localTtsCode).then((value) => {
-                            cardTts.speak(cards[0]!.localText).then((value) => {
-                                  // Wait two seconds for answer
-                                  Future.delayed(const Duration(seconds: 2),
-                                      () {
-                                    // Swipe and restart
-                                    _toggleCardFlip(0);
-                                    swiperController
-                                        .swipe(CardSwiperDirection.right);
-                                    timer = Timer(const Duration(seconds: 1),
-                                        () => playNextCard());
-                                  })
-                                })
-                          });
-                    })
-                  })
+
+        cardTts.setLanguage(nativeTtsCode).then((_) {
+          if (!mounted) return;
+          cardTts.speak(cards[0]!.nativeText).then((_) {
+            if (!mounted) return;
+            Future.delayed(const Duration(seconds: 2), () {
+              if (!mounted) return;
+              _toggleCardFlip(0);
+              cardTts.setLanguage(localTtsCode).then((_) {
+                if (!mounted) return;
+                cardTts.speak(cards[0]!.localText).then((_) {
+                  if (!mounted) return;
+                  Future.delayed(const Duration(seconds: 2), () {
+                    if (!mounted) return;
+                    _toggleCardFlip(0);
+                    swiperController.swipe(CardSwiperDirection.right);
+                    _playCarModeTimer =
+                        Timer(const Duration(seconds: 1), playNextCard);
+                  });
+                });
+              });
             });
+          });
+        });
       } else {
-        timer?.cancel();
+        _playCarModeTimer?.cancel();
       }
     }
 
@@ -182,6 +181,7 @@ class _PlayPageState extends State<PlayPage> {
     swiperController.dispose();
     _controllerCenter.dispose();
     cardTts.stop();
+    _playCarModeTimer?.cancel(); // Cancel any active timer
     super.dispose();
   }
 
