@@ -172,10 +172,10 @@ class _HomePageState extends State<HomePage>
         .getCards(0, lang.languageId!, true); // 0 and true for all cards
 
     if (cards.isEmpty) {
-      // manageLanguageModel(getLanguageCode(lang.languageCode, context),
-      //     ManageLanguageModelAction.DELETE);
-      // // Delete immediately if no cards exist
-      // await DatabaseHelper.instance.deleteLanguage(lang.languageId!);
+      manageLanguageModel(getLanguageCode(lang.languageCode, context),
+          ManageLanguageModelAction.DELETE);
+      // Delete immediately if no cards exist
+      await DatabaseHelper.instance.deleteLanguage(lang.languageId!);
       _loadLanguages();
     } else {
       showDialog(
@@ -198,9 +198,9 @@ class _HomePageState extends State<HomePage>
       ).then((value) => {
             if (value == true)
               {
-                // manageLanguageModel(getLanguageCode(lang.languageCode, context),
-                //     ManageLanguageModelAction.DELETE),
-                // DatabaseHelper.instance.deleteLanguage(lang.languageId!),
+                manageLanguageModel(getLanguageCode(lang.languageCode, context),
+                    ManageLanguageModelAction.DELETE),
+                DatabaseHelper.instance.deleteLanguage(lang.languageId!),
                 _loadLanguages()
               }
           });
@@ -282,11 +282,81 @@ class _HomePageState extends State<HomePage>
                                       ),
                                     );
                                   },
-                                  onLongPress: () => {
+                                  onLongPress: () async => {
                                     _triggerShake(lang.languageCode),
-                                    Logger().i(
-                                        "Long press on ${lang.languageName}"),
-                                    _showDeleteDialog()
+                                    await languageModelManager
+                                        .isModelDownloaded(getLanguageCode(
+                                            lang.languageCode, context))
+                                        .then((isModelDownloaded) => showMenu(
+                                              context: context,
+                                              position: _getPosition(context),
+                                              color:
+                                                  ThemeColors.backgroundColor,
+                                              items: <PopupMenuEntry<String>>[
+                                                PopupMenuItem<String>(
+                                                  value: "download",
+                                                  enabled: isModelDownloaded
+                                                      ? false
+                                                      : true,
+                                                  child: IntrinsicWidth(
+                                                    child: SizedBox(
+                                                      width: 225,
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(
+                                                              isModelDownloaded
+                                                                  ? Icons
+                                                                      .file_download_off_outlined
+                                                                  : Icons
+                                                                      .file_download_outlined,
+                                                              color: ThemeColors
+                                                                  .primaryFontColor),
+                                                          const SizedBox(
+                                                              width: 10),
+                                                          Text(isModelDownloaded
+                                                              ? 'Language model downloaded'
+                                                              : 'Download language model'),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                PopupMenuDivider(),
+                                                const PopupMenuItem<String>(
+                                                  value: "delete",
+                                                  child: IntrinsicWidth(
+                                                    child: SizedBox(
+                                                      width: 100,
+                                                      child: Row(
+                                                        children: [
+                                                          Icon(Icons.delete,
+                                                              color: ThemeColors
+                                                                  .deleteColor),
+                                                          SizedBox(width: 10),
+                                                          Text(
+                                                            "Delete",
+                                                            style: TextStyle(
+                                                                color: ThemeColors
+                                                                    .deleteColor),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ))
+                                        .then((menuChoice) {
+                                      if (menuChoice != null) {
+                                        menuChoice == "download"
+                                            ? manageLanguageModel(
+                                                getLanguageCode(
+                                                    lang.languageCode, context),
+                                                ManageLanguageModelAction
+                                                    .DOWNLOAD)
+                                            : _showDeleteDialog();
+                                      }
+                                    })
                                   },
                                   style: ElevatedButton.styleFrom(
                                     fixedSize: const Size(90, 60),
@@ -364,6 +434,26 @@ class _HomePageState extends State<HomePage>
         ],
       ),
     );
+  }
+
+  RelativeRect _getPosition(BuildContext context) {
+    final RenderBox bar = context.findRenderObject() as RenderBox;
+    final RenderBox overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox;
+    RelativeRect position = RelativeRect.fromRect(
+      Rect.fromPoints(
+        bar.localToGlobal(bar.size.bottomRight(Offset.zero), ancestor: overlay),
+        bar.localToGlobal(bar.size.bottomRight(Offset.zero), ancestor: overlay),
+      ),
+      Offset.zero & overlay.size,
+    );
+    position = RelativeRect.fromLTRB(
+      position.left, // Offset the position right by 5
+      position.top + 3, // Offset the position down by 3
+      position.right,
+      position.bottom,
+    );
+    return position;
   }
 
   Future<CountryCode?> showPickerDialog(BuildContext context) async {
