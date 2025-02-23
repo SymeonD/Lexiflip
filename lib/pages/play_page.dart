@@ -1,9 +1,4 @@
-// In: deck
-// Get: cards
-// Out: deck
-
 import 'dart:async';
-import 'dart:math';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cards/main.dart';
@@ -16,6 +11,7 @@ import 'package:confetti/confetti.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
+import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -40,8 +36,9 @@ class _PlayPageState extends State<PlayPage> {
 
   CardSwiperController swiperController = CardSwiperController();
 
-  List<bool> cardFlipStates = [];
-  bool currentFlipState = true;
+  // List<bool> cardFlipStates = [];
+  List<FlipCardController> flipCardControllers = [];
+  bool currentFlipState = true; // True is front facing
 
   bool hint = false;
 
@@ -61,13 +58,13 @@ class _PlayPageState extends State<PlayPage> {
       final db = DatabaseHelper.instance;
       var cardList = await db.getCards(widget.languageDeck.languageDeckId!,
           widget.language.languageId!, widget.languageDeck.isDefault!);
-      // Add an empty card to the list
-      // cardList.add(LanguageCard(languageId: 1, nativeText: "", localText: ""));
       setState(() {
         cards.addAll(cardList);
         cards.shuffle();
         cardsLength = cards.length;
-        cardFlipStates = List<bool>.filled(cardsLength, true);
+        // cardFlipStates = List<bool>.filled(cardsLength, true);
+        flipCardControllers =
+            List<FlipCardController>.filled(cardsLength, FlipCardController());
       });
       return true;
     } catch (e) {
@@ -79,6 +76,7 @@ class _PlayPageState extends State<PlayPage> {
   @override
   void initState() {
     super.initState();
+    Logger().i("Starting play page, car mode: ${widget.carMode}");
     _controllerCenter =
         ConfettiController(duration: const Duration(seconds: 1));
     _loadCards().then((value) => {
@@ -126,12 +124,6 @@ class _PlayPageState extends State<PlayPage> {
     return true;
   }
 
-  void _toggleCardFlip(int index) {
-    setState(() {
-      cardFlipStates[index] = !cardFlipStates[index]; // Toggle card flip
-    });
-  }
-
   void _restartGame() {
     setState(() {
       _loadCards()
@@ -139,26 +131,51 @@ class _PlayPageState extends State<PlayPage> {
     });
   }
 
-  // Find a way to cancel
+  int _autoPlaySessionId = 0; // Unique ID for autoplay session
+  bool _isAutoPlaying = false;
+
   void playCarMode() {
+    stopCarMode(); // Fully stop previous session
+    _isAutoPlaying = true;
+    _autoPlaySessionId++; // Generate a new session ID
+    int currentSessionId = _autoPlaySessionId;
+
     void playNextCard() {
-      if (!mounted) return; // Do nothing if widget is disposed
+      if (!mounted || !_isAutoPlaying || currentSessionId != _autoPlaySessionId)
+        return;
+
       if (cards.isNotEmpty) {
+        cardTts.stop();
+
         cardTts.setLanguage(nativeTtsCode).then((_) {
-          if (!mounted) return;
+          if (!mounted ||
+              !_isAutoPlaying ||
+              currentSessionId != _autoPlaySessionId) return;
           cardTts.speak(cards[0]!.nativeText).then((_) {
-            if (!mounted) return;
+            if (!mounted ||
+                !_isAutoPlaying ||
+                currentSessionId != _autoPlaySessionId) return;
             Future.delayed(const Duration(seconds: 3), () {
-              if (!mounted) return;
-              _toggleCardFlip(0);
+              if (!mounted ||
+                  !_isAutoPlaying ||
+                  currentSessionId != _autoPlaySessionId) return;
+              flipCardControllers[0].flipcard();
+
               cardTts.setLanguage(localTtsCode).then((_) {
-                if (!mounted) return;
+                if (!mounted ||
+                    !_isAutoPlaying ||
+                    currentSessionId != _autoPlaySessionId) return;
                 cardTts.speak(cards[0]!.localText).then((_) {
-                  if (!mounted) return;
+                  if (!mounted ||
+                      !_isAutoPlaying ||
+                      currentSessionId != _autoPlaySessionId) return;
                   Future.delayed(const Duration(seconds: 3), () {
-                    if (!mounted) return;
-                    _toggleCardFlip(0);
+                    if (!mounted ||
+                        !_isAutoPlaying ||
+                        currentSessionId != _autoPlaySessionId) return;
+                    flipCardControllers[0].flipcard();
                     swiperController.swipe(CardSwiperDirection.right);
+
                     _playCarModeTimer =
                         Timer(const Duration(seconds: 1), playNextCard);
                   });
@@ -168,11 +185,23 @@ class _PlayPageState extends State<PlayPage> {
           });
         });
       } else {
-        _playCarModeTimer?.cancel();
+        stopCarMode();
       }
     }
 
     playNextCard();
+  }
+
+  void stopCarMode() {
+    _isAutoPlaying = false;
+    _autoPlaySessionId++; // Invalidate all previous sessions
+    _playCarModeTimer?.cancel();
+    cardTts.stop();
+  }
+
+  void onCardSwipedAuto() {
+    stopCarMode();
+    playCarMode();
   }
 
   @override
@@ -348,7 +377,10 @@ class _PlayPageState extends State<PlayPage> {
                     controller: swiperController,
                     // isLoop: false,
                     allowedSwipeDirection:
-                        const AllowedSwipeDirection.symmetric(horizontal: true),
+                        widget.carMode != null && widget.carMode!
+                            ? const AllowedSwipeDirection.only(right: true)
+                            : const AllowedSwipeDirection.symmetric(
+                                horizontal: true),
                     onSwipeDirectionChange:
                         (horizontalDirection, verticalDirection) => {
                       // Update swipe direction here to handle the gradient color change dynamically
@@ -362,13 +394,19 @@ class _PlayPageState extends State<PlayPage> {
 
                     // After the swipe is finished
                     onSwipe: (previousIndex, currentIndex, direction) {
+                      Logger().i("Swiped: $direction");
                       setState(() {
-                        // Reset current flip state
-                        currentFlipState = true;
                         // Reset hint state
                         hint = false;
                         // Reset face
-                        cardFlipStates[previousIndex] = true;
+                        flipCardControllers[previousIndex].state != null &&
+                                flipCardControllers[previousIndex]
+                                    .state!
+                                    .isFront
+                            ? null
+                            : flipCardControllers[previousIndex]
+                                .state!
+                                .isFront = true;
                       });
 
                       if (direction == CardSwiperDirection.right) {
@@ -383,9 +421,11 @@ class _PlayPageState extends State<PlayPage> {
                           cardsLength =
                               cards.length; // Update cardsLength properly
                         });
+                        widget.carMode ?? true ? onCardSwipedAuto() : null;
                         return previousIndex == cardsLength ? true : false;
                         // }
                       } else {
+                        widget.carMode ?? true ? onCardSwipedAuto() : null;
                         return true;
                       }
                     },
@@ -394,30 +434,27 @@ class _PlayPageState extends State<PlayPage> {
                     cardBuilder:
                         (context, index, percentThresholdX, percentThresholdY) {
                       int distanceToIndex = index - cardsLength + 1;
-                      index =
+                      int finalIndex =
                           distanceToIndex > 0 ? index - distanceToIndex : index;
-                      final card = cards[index];
+                      final card = cards[finalIndex];
 
                       return Align(
                         alignment: const Alignment(0, 1),
                         child: InkWell(
                           splashColor: Colors.transparent,
-                          onTap: () => {
-                            _toggleCardFlip(index),
-                            currentFlipState = !currentFlipState
-                          },
-                          child: AnimatedSwitcher(
-                            key: ValueKey<int>(index),
-                            duration: const Duration(milliseconds: 500),
-                            transitionBuilder: __transitionBuilder,
-                            switchInCurve: Curves.easeOutBack,
-                            switchOutCurve: Curves.easeOutBack.flipped,
-                            child: KeyedSubtree(
-                              key: ValueKey<bool>(cardFlipStates[index]),
-                              child: cardFlipStates[index]
-                                  ? _buildFront(card)
-                                  : _buildBack(card),
-                            ),
+                          // onTap: () => {
+                          //   // _toggleCardFlip(index),
+                          //   flipCardControllers[index].flipcard(),
+                          //   currentFlipState = !currentFlipState
+                          // },
+                          child: FlipCard(
+                            animationDuration:
+                                const Duration(milliseconds: 300),
+                            rotateSide: RotateSide.right,
+                            onTapFlipping: true,
+                            frontWidget: _buildFront(card),
+                            backWidget: _buildBack(card),
+                            controller: flipCardControllers[index],
                           ),
                         ),
                       );
@@ -564,27 +601,6 @@ class _PlayPageState extends State<PlayPage> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget __transitionBuilder(Widget widget, Animation<double> animation) {
-    final rotateAnim = Tween(begin: pi, end: 0.0).animate(animation);
-    return AnimatedBuilder(
-      animation: rotateAnim,
-      child: widget,
-      builder: (context, widget) {
-        final isUnder = (ValueKey(currentFlipState) == widget!.key);
-
-        var tilt = ((animation.value - 0.5).abs() - 0.5) * 0.003;
-        tilt *= isUnder ? -1.0 : 1.0;
-        final value =
-            isUnder ? min(rotateAnim.value, pi / 2) : rotateAnim.value;
-        return Transform(
-          transform: Matrix4.rotationY(value)..setEntry(3, 0, tilt),
-          alignment: Alignment.center,
-          child: widget,
-        );
-      },
     );
   }
 }
