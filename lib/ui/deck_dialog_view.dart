@@ -1,3 +1,4 @@
+import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/language.dart';
 import 'package:cards/models/language_card.dart';
@@ -196,7 +197,7 @@ class _DeckDialogViewState extends State<DeckDialogView> {
               children: [
                 IconButton(
                   disabledColor: Colors.grey,
-                  color: const Color(0xff1EA6c6),
+                  color: ThemeColors.primaryColor,
                   onPressed: _isButtonEnabled
                       ? () async {
                           if (widget.languageDeck != null) {

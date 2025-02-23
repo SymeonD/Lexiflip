@@ -1,3 +1,4 @@
+import 'package:cards/main.dart';
 import 'package:flutter/material.dart';
 
 void showCustomSnackBar(BuildContext context, String message, int duration,
@@ -13,7 +14,8 @@ void showCustomSnackBar(BuildContext context, String message, int duration,
             ),
             onPressed: onButtonPressed,
             child: Text(buttonText,
-                style: const TextStyle(color: Colors.white, fontSize: 12)),
+                style: const TextStyle(
+                    color: ThemeColors.primaryWhiteFontColor, fontSize: 12)),
           ),
       ],
     ),
@@ -27,5 +29,6 @@ void showCustomSnackBar(BuildContext context, String message, int duration,
       borderRadius: BorderRadius.circular(12), // Rounded corners
     ),
     duration: Duration(seconds: duration),
+    backgroundColor: ThemeColors.primaryColor,
   ));
 }

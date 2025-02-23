@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/language.dart';
 import 'package:cards/models/language_card.dart';
@@ -188,7 +189,7 @@ class _PlayPageState extends State<PlayPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
+        backgroundColor: ThemeColors.backgroundColor,
         elevation: 0,
         shape: Border(bottom: BorderSide(color: Colors.grey.shade300)),
         // Get the language name from the language code
@@ -213,7 +214,7 @@ class _PlayPageState extends State<PlayPage> {
                   overflow: TextOverflow.ellipsis, // Truncate with ellipsis
                   maxLines: 1, // Limit to one line
                   style: const TextStyle(
-                    color: Colors.black87,
+                    color: ThemeColors.primaryFontColor,
                     fontSize: 24,
                     fontWeight: FontWeight.w400,
                   ),
@@ -241,7 +242,10 @@ class _PlayPageState extends State<PlayPage> {
                         false, // start again as soon as the animation is finished
                     emissionFrequency: 0.005,
                     numberOfParticles: 100,
-                    colors: const [Color(0xff1EA6C6), Color(0xffF4581B)],
+                    colors: const [
+                      ThemeColors.primaryColor,
+                      ThemeColors.secondaryColor
+                    ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -249,7 +253,7 @@ class _PlayPageState extends State<PlayPage> {
                       // Restart Button
                       ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
+                              backgroundColor: ThemeColors.backgroundColor,
                               fixedSize: const Size(75, 75),
                               shape: const RoundedRectangleBorder(
                                 borderRadius:
@@ -266,7 +270,7 @@ class _PlayPageState extends State<PlayPage> {
                       // Leave Button
                       ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
+                              backgroundColor: ThemeColors.backgroundColor,
                               fixedSize: const Size(75, 75),
                               shape: const RoundedRectangleBorder(
                                 borderRadius:
@@ -304,11 +308,10 @@ class _PlayPageState extends State<PlayPage> {
                             radius: swipeDirection == CardSwiperDirection.left
                                 ? 0.4
                                 : 0, // Animated radius
-                            colors: [
-                              Colors.red,
-                              Theme.of(context)
-                                  .colorScheme
-                                  .surface, // Ensure smooth fade-out
+                            colors: const [
+                              ThemeColors.deleteColor,
+                              ThemeColors
+                                  .backgroundColor, // Ensure smooth fade-out
                             ],
                           ),
                         ),
@@ -324,11 +327,10 @@ class _PlayPageState extends State<PlayPage> {
                             radius: swipeDirection == CardSwiperDirection.right
                                 ? 0.4
                                 : 0, // Animated radius
-                            colors: [
-                              Colors.green,
-                              Theme.of(context)
-                                  .colorScheme
-                                  .surface, // Ensure smooth fade-out
+                            colors: const [
+                              ThemeColors.validColor,
+                              ThemeColors
+                                  .backgroundColor, // Ensure smooth fade-out
                             ],
                           ),
                         ),
@@ -439,7 +441,7 @@ class _PlayPageState extends State<PlayPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
         ),
-        color: Colors.white,
+        color: ThemeColors.backgroundColor,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -458,6 +460,7 @@ class _PlayPageState extends State<PlayPage> {
                             hint
                                 ? Icons.flashlight_off_outlined
                                 : Icons.flashlight_on_outlined,
+                            // TODO: Add to color theme
                             color: Colors.green.shade400,
                             size: 35,
                           )),
@@ -486,7 +489,7 @@ class _PlayPageState extends State<PlayPage> {
                           style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black54)),
+                              color: ThemeColors.secondaryFontColor)),
                     ),
                   )
                 : const Spacer(),
@@ -505,7 +508,7 @@ class _PlayPageState extends State<PlayPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
         ),
-        color: const Color.fromARGB(255, 101, 80, 163),
+        color: ThemeColors.primaryColor,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -523,6 +526,7 @@ class _PlayPageState extends State<PlayPage> {
                   },
                   icon: Icon(
                     Icons.volume_up_outlined,
+                    // TODO: Add to color theme
                     color: Colors.yellow.shade400,
                     size: 40,
                   )),
@@ -538,7 +542,7 @@ class _PlayPageState extends State<PlayPage> {
                         fontSize:
                             card.localRomanization?.trim() != "" ? 20 : 32,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white)),
+                        color: ThemeColors.primaryWhiteFontColor)),
               ),
             ),
             const SizedBox(height: 10),
@@ -553,7 +557,7 @@ class _PlayPageState extends State<PlayPage> {
                           style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Colors.white60)),
+                              color: ThemeColors.secondaryWhiteFontColor)),
                     ),
                   )
                 : const Spacer(),

@@ -1,3 +1,4 @@
+import 'package:cards/main.dart';
 import 'package:cards/pages/language_decks_page.dart';
 import 'package:cards/utils/country_to_language.dart';
 import 'package:cards/utils/manage_language_model.dart';
@@ -135,7 +136,8 @@ class _HomePageState extends State<HomePage>
                 child: const Text("Cancel")),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text("Delete", style: TextStyle(color: Colors.red)),
+              child: const Text("Delete",
+                  style: TextStyle(color: ThemeColors.deleteColor)),
             ),
           ],
         ),
@@ -170,13 +172,13 @@ class _HomePageState extends State<HomePage>
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: Title(
-                color: Theme.of(context).colorScheme.primary,
+                color: ThemeColors.primaryColor,
                 child: const Text("Where are we going \n today ?",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xff1EA6C6))),
+                        color: ThemeColors.primaryColor)),
               ),
             ),
           ),
@@ -267,7 +269,7 @@ class _HomePageState extends State<HomePage>
                               }
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
+                              backgroundColor: ThemeColors.backgroundColor,
                               fixedSize: const Size(90, 60),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -299,7 +301,7 @@ class _HomePageState extends State<HomePage>
               child: Icon(
                 Icons.location_on_outlined,
                 size: 75,
-                color: Color(0xffF4581B),
+                color: Color(0xffF4581B), // TODO: add to theme ?
               ))
         ],
       ),

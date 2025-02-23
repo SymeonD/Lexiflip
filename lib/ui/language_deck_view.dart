@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/language.dart';
 import 'package:cards/models/language_deck.dart';
@@ -69,7 +70,7 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15.0),
           ),
-          color: Colors.white,
+          color: ThemeColors.backgroundColor,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -104,7 +105,7 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                               return AlertDialog(
                                 title: const Text("Delete deck",
                                     style: TextStyle(
-                                        color: Colors.black,
+                                        color: ThemeColors.primaryFontColor,
                                         fontWeight: FontWeight.bold)),
                                 content: const Text(
                                     "This deck contains cards, are you sure you want to delete it ?"),
@@ -124,7 +125,8 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                       Navigator.of(context).pop();
                                     },
                                     child: const Text("Delete",
-                                        style: TextStyle(color: Colors.red)),
+                                        style: TextStyle(
+                                            color: ThemeColors.deleteColor)),
                                   ),
                                 ],
                               );
@@ -142,7 +144,7 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                       }
                     },
                     offset: const Offset(0, 40),
-                    color: Colors.white,
+                    color: ThemeColors.backgroundColor,
                     icon: const Icon(Icons.more_horiz),
                     itemBuilder: (BuildContext context) => [
                       // Edit option
@@ -156,7 +158,8 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                             width: 100,
                             child: Row(
                               children: [
-                                Icon(Icons.edit_outlined, color: Colors.black),
+                                Icon(Icons.edit_outlined,
+                                    color: ThemeColors.primaryFontColor),
                                 SizedBox(width: 10),
                                 Text("Edit"),
                               ],
@@ -173,7 +176,8 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                             width: 100,
                             child: Row(
                               children: [
-                                Icon(Icons.share_outlined, color: Colors.black),
+                                Icon(Icons.share_outlined,
+                                    color: ThemeColors.primaryFontColor),
                                 SizedBox(width: 10),
                                 Text("Share"),
                               ],
@@ -190,10 +194,12 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                           width: 100,
                           child: Row(
                             children: [
-                              Icon(Icons.delete_outlined, color: Colors.red),
+                              Icon(Icons.delete_outlined,
+                                  color: ThemeColors.deleteColor),
                               SizedBox(width: 10),
                               Text("Delete",
-                                  style: TextStyle(color: Colors.red)),
+                                  style: TextStyle(
+                                      color: ThemeColors.deleteColor)),
                             ],
                           ),
                         ),
@@ -243,7 +249,8 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                 top: 53,
                                 left: 13,
                                 child: Icon(Icons.auto_stories_outlined,
-                                    color: Colors.white, size: 45),
+                                    color: ThemeColors.backgroundColor,
+                                    size: 45),
                               ),
                             ]),
                           ),
@@ -282,7 +289,8 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                 top: 47,
                                 right: 14,
                                 child: Icon(Icons.play_arrow_outlined,
-                                    color: Colors.white, size: 55),
+                                    color: ThemeColors.backgroundColor,
+                                    size: 55),
                               ),
                             ]),
                           ),
@@ -320,7 +328,7 @@ class MyPainterLeft extends CustomPainter {
     // Path number 1
 
     path = getCustomPathLeft(size);
-    paint.color = const Color(0xff0070FF);
+    paint.color = ThemeColors.primaryColor;
     canvas.drawPath(path, paint);
   }
 
@@ -371,7 +379,7 @@ class MyPainterRight extends CustomPainter {
 
     // Path number 1
     path = getCustomPathRight(size);
-    paint.color = const Color(0xff50F061);
+    paint.color = ThemeColors.secondaryColor;
 
     canvas.drawPath(path, paint);
   }

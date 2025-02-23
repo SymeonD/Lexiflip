@@ -1,4 +1,5 @@
 import 'package:canopas_country_picker/canopas_country_picker.dart';
+import 'package:cards/main.dart';
 import 'package:cards/pages/home_page.dart';
 import 'package:cards/ui/country_code_list_view.dart';
 import 'package:cards/utils/country_to_language.dart';
@@ -53,7 +54,7 @@ class _StartingPageState extends State<StartingPage> {
                   children: [
                     const SizedBox(height: 80),
                     Title(
-                      color: Theme.of(context).colorScheme.primary,
+                      color: ThemeColors.primaryColor,
                       child: const Text("Where do you come from ?",
                           textAlign: TextAlign.center,
                           style: TextStyle(
@@ -76,7 +77,7 @@ class _StartingPageState extends State<StartingPage> {
                         hintStyle: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black54),
+                            color: ThemeColors.secondaryFontColor),
                         border: OutlineInputBorder(
                           borderSide: BorderSide.none,
                           borderRadius: BorderRadius.circular(12),
@@ -128,7 +129,7 @@ class _StartingPageState extends State<StartingPage> {
                   },
                   icon: const Icon(
                     Icons.check,
-                    color: Color(0xff1EA6c6),
+                    color: ThemeColors.primaryColor,
                     size: 40,
                   ),
                 ),

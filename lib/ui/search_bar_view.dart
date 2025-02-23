@@ -1,3 +1,4 @@
+import 'package:cards/main.dart';
 import 'package:flutter/material.dart';
 
 class SearchBarView extends StatefulWidget {
@@ -28,14 +29,16 @@ class _SearchBarViewState extends State<SearchBarView> {
       decoration: InputDecoration(
           prefixIcon: Icon(
             widget.icon ?? Icons.search_outlined,
-            color: Colors.black87,
+            color: ThemeColors.secondaryFontColor,
             size: 24,
           ),
           isDense: true,
           filled: true,
           hintText: widget.hintText,
           hintStyle: const TextStyle(
-              fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black54),
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: ThemeColors.secondaryFontColor),
           border: OutlineInputBorder(
             borderSide: BorderSide.none,
             borderRadius: BorderRadius.circular(12),

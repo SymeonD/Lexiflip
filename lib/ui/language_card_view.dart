@@ -1,4 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/language.dart';
 // import 'package:cards/models/language.dart';
@@ -57,7 +58,7 @@ class _LanguageCardViewState extends State<LanguageCardView> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12.0),
             ),
-            color: Colors.white,
+            color: ThemeColors.backgroundColor,
             child: Stack(
               children: [
                 Positioned(
@@ -122,7 +123,7 @@ class _LanguageCardViewState extends State<LanguageCardView> {
                       }
                     },
                     offset: const Offset(0, 40),
-                    color: Colors.white,
+                    color: ThemeColors.backgroundColor,
                     icon: const Icon(Icons.more_horiz),
                     itemBuilder: (BuildContext context) => [
                       // Edit option
@@ -135,7 +136,8 @@ class _LanguageCardViewState extends State<LanguageCardView> {
                             width: 100,
                             child: Row(
                               children: [
-                                Icon(Icons.edit_outlined, color: Colors.black),
+                                Icon(Icons.edit_outlined,
+                                    color: ThemeColors.primaryFontColor),
                                 SizedBox(width: 10),
                                 Text("Edit"),
                               ],
@@ -152,7 +154,8 @@ class _LanguageCardViewState extends State<LanguageCardView> {
                             width: 100,
                             child: Row(
                               children: [
-                                Icon(Icons.share_outlined, color: Colors.black),
+                                Icon(Icons.share_outlined,
+                                    color: ThemeColors.primaryFontColor),
                                 SizedBox(width: 10),
                                 Text("Share"),
                               ],
@@ -170,7 +173,7 @@ class _LanguageCardViewState extends State<LanguageCardView> {
                             child: Row(
                               children: [
                                 Icon(Icons.remove_circle_outline,
-                                    color: Colors.red),
+                                    color: ThemeColors.deleteColor),
                                 SizedBox(width: 10),
                                 Text(
                                   "Remove from deck",
@@ -188,10 +191,12 @@ class _LanguageCardViewState extends State<LanguageCardView> {
                           width: 100,
                           child: Row(
                             children: [
-                              Icon(Icons.delete_outlined, color: Colors.red),
+                              Icon(Icons.delete_outlined,
+                                  color: ThemeColors.deleteColor),
                               SizedBox(width: 10),
                               Text("Delete",
-                                  style: TextStyle(color: Colors.red)),
+                                  style: TextStyle(
+                                      color: ThemeColors.deleteColor)),
                             ],
                           ),
                         ),

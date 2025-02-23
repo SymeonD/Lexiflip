@@ -1,3 +1,4 @@
+import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/language.dart';
 import 'package:cards/models/language_deck.dart';
@@ -72,7 +73,7 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
+        backgroundColor: ThemeColors.backgroundColor,
         elevation: 0,
         shape: Border(bottom: BorderSide(color: Colors.grey.shade300)),
         // Get the language name from the language code
@@ -97,7 +98,7 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
                   overflow: TextOverflow.ellipsis, // Truncate with ellipsis
                   maxLines: 1, // Limit to one line
                   style: const TextStyle(
-                    color: Colors.black87,
+                    color: ThemeColors.primaryFontColor,
                     fontSize: 24,
                     fontWeight: FontWeight.w400,
                   ),
@@ -155,14 +156,14 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15.0),
                         ),
-                        color: Colors.white,
+                        color: ThemeColors.backgroundColor,
                         child: const Center(
                           child: Text(
                             '+',
                             style: TextStyle(
                               fontSize: 48,
                               fontWeight: FontWeight.bold,
-                              color: Colors.grey,
+                              color: ThemeColors.secondaryFontColor,
                             ),
                           ),
                         ),

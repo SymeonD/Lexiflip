@@ -1,4 +1,5 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
+import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/language.dart';
 import 'package:cards/models/language_card.dart';
@@ -109,7 +110,7 @@ class _CardDialogViewState extends State<CardDialogView> {
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
             automaticallyImplyLeading: false,
-            backgroundColor: Colors.white,
+            backgroundColor: ThemeColors.backgroundColor,
             elevation: 0,
             shape: Border(bottom: BorderSide(color: Colors.grey.shade300)),
             // Get the language name from the language code
@@ -134,7 +135,7 @@ class _CardDialogViewState extends State<CardDialogView> {
                       overflow: TextOverflow.ellipsis, // Truncate with ellipsis
                       maxLines: 1, // Limit to one line
                       style: const TextStyle(
-                        color: Colors.black87,
+                        color: ThemeColors.primaryFontColor,
                         fontSize: 24,
                         fontWeight: FontWeight.w400,
                       ),
@@ -160,7 +161,7 @@ class _CardDialogViewState extends State<CardDialogView> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(25.0),
                         ),
-                        color: Colors.white,
+                        color: ThemeColors.backgroundColor,
                         child: Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Column(
@@ -188,7 +189,7 @@ class _CardDialogViewState extends State<CardDialogView> {
                                         style: const TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.black,
+                                          color: ThemeColors.primaryFontColor,
                                         ),
                                         decoration: const InputDecoration(
                                             counterStyle: TextStyle(
@@ -198,7 +199,8 @@ class _CardDialogViewState extends State<CardDialogView> {
                                             hintStyle: TextStyle(
                                                 fontSize: 24,
                                                 fontWeight: FontWeight.w500,
-                                                color: Colors.black54),
+                                                color: ThemeColors
+                                                    .primaryFontColor),
                                             border: OutlineInputBorder(
                                               borderSide: BorderSide.none,
                                               borderRadius: BorderRadius.all(
@@ -210,7 +212,7 @@ class _CardDialogViewState extends State<CardDialogView> {
                                       padding: const EdgeInsets.only(top: 16),
                                       icon:
                                           const Icon(Icons.translate_outlined),
-                                      color: Colors.black54,
+                                      color: ThemeColors.secondaryFontColor,
                                       iconSize: 30,
                                       onPressed: () {
                                         isModelDownloaded
@@ -246,7 +248,7 @@ class _CardDialogViewState extends State<CardDialogView> {
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
-                                    color: Colors.black54,
+                                    color: ThemeColors.secondaryFontColor,
                                   ),
                                   inputFormatters: [
                                     FilteringTextInputFormatter.deny(
@@ -261,7 +263,8 @@ class _CardDialogViewState extends State<CardDialogView> {
                                       hintStyle: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.black54),
+                                          color:
+                                              ThemeColors.secondaryFontColor),
                                       border: OutlineInputBorder(
                                         borderSide: BorderSide.none,
                                         borderRadius: BorderRadius.all(
@@ -285,17 +288,19 @@ class _CardDialogViewState extends State<CardDialogView> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25.0),
                       ),
-                      color: Theme.of(context).colorScheme.secondary,
+                      color: ThemeColors.primaryColor,
                       child: Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Theme(
                             data: Theme.of(context).copyWith(
                               textSelectionTheme: const TextSelectionThemeData(
-                                cursorColor: Colors.white, // White cursor
+                                cursorColor: ThemeColors
+                                    .primaryWhiteFontColor, // White cursor
+                                // TODO: add to the theme
                                 selectionColor: Colors
                                     .white24, // Light white selection background
-                                selectionHandleColor:
-                                    Colors.white, // White selection handle
+                                selectionHandleColor: ThemeColors
+                                    .primaryWhiteFontColor, // White selection handle
                               ),
                             ),
                             child: Column(
@@ -312,7 +317,7 @@ class _CardDialogViewState extends State<CardDialogView> {
                                   style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w500,
-                                    color: Colors.white,
+                                    color: ThemeColors.primaryWhiteFontColor,
                                   ),
                                   inputFormatters: [
                                     FilteringTextInputFormatter.deny(
@@ -321,14 +326,16 @@ class _CardDialogViewState extends State<CardDialogView> {
                                   textInputAction: TextInputAction.done,
                                   decoration: const InputDecoration(
                                       counterStyle: TextStyle(
-                                        color: Colors.white54,
+                                        color:
+                                            ThemeColors.secondaryWhiteFontColor,
                                         height: 0.1,
                                       ),
                                       hintText: 'This card\'s word',
                                       hintStyle: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.white),
+                                          color: ThemeColors
+                                              .primaryWhiteFontColor),
                                       border: OutlineInputBorder(
                                         borderSide: BorderSide.none,
                                         borderRadius: BorderRadius.all(
@@ -348,14 +355,15 @@ class _CardDialogViewState extends State<CardDialogView> {
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
-                                    color: Colors.white70,
+                                    color: ThemeColors.secondaryWhiteFontColor,
                                   ),
                                   inputFormatters: [
                                     FilteringTextInputFormatter.deny(
                                         RegExp(r"\n"))
                                   ],
                                   textInputAction: TextInputAction.done,
-                                  cursorColor: Colors.white,
+                                  cursorColor:
+                                      ThemeColors.primaryWhiteFontColor,
                                   decoration: const InputDecoration(
                                       contentPadding: EdgeInsets.only(
                                         top: 16,
@@ -367,7 +375,8 @@ class _CardDialogViewState extends State<CardDialogView> {
                                       hintStyle: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w500,
-                                          color: Colors.white54),
+                                          color: ThemeColors
+                                              .secondaryWhiteFontColor),
                                       border: OutlineInputBorder(
                                         borderSide: BorderSide.none,
                                         borderRadius: BorderRadius.all(
@@ -388,8 +397,8 @@ class _CardDialogViewState extends State<CardDialogView> {
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: IconButton(
-                        disabledColor: Colors.grey,
-                        color: const Color(0xff1EA6c6),
+                        disabledColor: ThemeColors.disabledColor,
+                        color: ThemeColors.primaryColor,
                         onPressed: () {
                           if (widget.languageCard == null) {
                             // Add the card into the database

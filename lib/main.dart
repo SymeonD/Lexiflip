@@ -44,10 +44,31 @@ class MyApp extends StatelessWidget {
         //
         // This works for code too, not just values: Most code changes can be
         // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: ThemeColors.primaryColor,
+            surface: ThemeColors.backgroundColor,
+            background: ThemeColors.backgroundColor),
         useMaterial3: true,
       ),
       home: nativeCountryCode == null ? const StartingPage() : const HomePage(),
     );
   }
+}
+
+class ThemeColors {
+  static const Color primaryColor = Color(0xFF1EA6C6);
+  static const Color secondaryColor = Color(0xFFF7CF52);
+
+  static const Color backgroundColor = Color(0xFFFFFFFF);
+
+  static const Color primaryFontColor = Color(0xDD000000);
+  static const Color secondaryFontColor = Colors.black54;
+
+  static const Color primaryWhiteFontColor = Color(0xFFFFFFFF);
+  static const Color secondaryWhiteFontColor = Color(0x8AFFFFFF);
+
+  static const Color disabledColor = Color(0x1A000000);
+
+  static const Color deleteColor = Color(0xFFFF0000);
+  static const Color validColor = Color(0xFF00FF00);
 }
