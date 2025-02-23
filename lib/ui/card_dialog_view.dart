@@ -208,30 +208,32 @@ class _CardDialogViewState extends State<CardDialogView> {
                                             )),
                                       ),
                                     ),
-                                    IconButton(
-                                      padding: const EdgeInsets.only(top: 16),
-                                      icon:
-                                          const Icon(Icons.translate_outlined),
-                                      color: ThemeColors.secondaryFontColor,
-                                      iconSize: 30,
-                                      onPressed: () {
-                                        isModelDownloaded
-                                            ? translateText(
-                                                    nativeTextController.text,
-                                                    nativeLanguage,
-                                                    localLanguage)
-                                                .then((value) => {
-                                                      localTextController.text =
-                                                          value
-                                                    })
-                                            :
-                                            // Show snackbar saying the model is not downloaded
-                                            showCustomSnackBar(
-                                                context,
-                                                'Model not downloaded yet',
-                                                2,
-                                              );
-                                      },
+                                    Expanded(
+                                      child: IconButton(
+                                        padding: const EdgeInsets.only(top: 16),
+                                        icon: const Icon(
+                                            Icons.translate_outlined),
+                                        color: ThemeColors.secondaryFontColor,
+                                        iconSize: 30,
+                                        onPressed: () {
+                                          isModelDownloaded
+                                              ? translateText(
+                                                      nativeTextController.text,
+                                                      nativeLanguage,
+                                                      localLanguage)
+                                                  .then((value) => {
+                                                        localTextController
+                                                            .text = value
+                                                      })
+                                              :
+                                              // Show snackbar saying the model is not downloaded
+                                              showCustomSnackBar(
+                                                  context,
+                                                  'Model not downloaded yet',
+                                                  2,
+                                                );
+                                        },
+                                      ),
                                     )
                                   ],
                                 ),
