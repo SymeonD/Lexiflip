@@ -140,8 +140,11 @@ class _PlayPageState extends State<PlayPage> {
     int currentSessionId = _autoPlaySessionId;
 
     void playNextCard() {
-      if (!mounted || !_isAutoPlaying || currentSessionId != _autoPlaySessionId)
+      if (!mounted ||
+          !_isAutoPlaying ||
+          currentSessionId != _autoPlaySessionId) {
         return;
+      }
 
       if (cards.isNotEmpty) {
         cardTts.stop();
