@@ -96,7 +96,8 @@ void downloadLanguageModel(Map<String, dynamic> args) async {
   try {
     BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
     final languageModelManager = OnDeviceTranslatorModelManager();
-    await languageModelManager.downloadModel(languageCode);
+    await languageModelManager.downloadModel(languageCode,
+        isWifiRequired: false);
     sendPort.send("Download Completed for $languageCode");
   } catch (e) {
     sendPort.send("Download Failed: $e");

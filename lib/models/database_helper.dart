@@ -113,7 +113,7 @@ class DatabaseHelper {
         {
           'languageId': languageId,
           'languageDeckName': languageDeckName,
-          'isDefault': isDefault,
+          'isDefault': isDefault.toString(),
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );

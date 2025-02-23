@@ -38,36 +38,85 @@ class _HomePageState extends State<HomePage>
 
   Future<void> checkNetworkAndPrompt(BuildContext context) async {
     var connectivityResult = await Connectivity().checkConnectivity();
-    if (!connectivityResult.contains(ConnectivityResult.wifi)) {
-      context.mounted
-          ? showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text("Language downloading"),
-                content: const Text(
-                    "At the moment only wifi is supported for language downloading, please connect to wifi for the download to continue. In the meantime you will not be able to use automatic translation."),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("Ok"),
+
+    connectivityResult.contains(ConnectivityResult.wifi) ||
+            connectivityResult.contains(ConnectivityResult.mobile)
+        ? SharedPreferences.getInstance().then((prefs) {
+            if (prefs.getBool("showLanguageDownloadPrompt") == null ||
+                prefs.getBool("showLanguageDownloadPrompt")!) {
+              // Get all the languages from the database
+              var allLanguages =
+                  languages.map((l) => l.languageCode).toSet().toList();
+              // Add the native country code to the list of added languages
+              allLanguages.add(nativeCountryCode);
+
+              // Get the corresponding language codes
+              allLanguages = allLanguages
+                  .map((lang) => getLanguageCode(lang, context))
+                  .toList();
+
+              var notDownloadedLanguages = [];
+              // Check if the languages are downloaded
+              for (var languageCode in allLanguages) {
+                languageModelManager
+                    .isModelDownloaded(languageCode)
+                    .then((value) => {
+                          if (!value)
+                            {
+                              notDownloadedLanguages.add(languageCode),
+                            }
+                        });
+              }
+              if (notDownloadedLanguages.isNotEmpty && context.mounted) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text("Language downloading"),
+                    content: Text(
+                        "Some languages you are using $notDownloadedLanguages are not downloaded yet, do you want to download them now ? When done, you will be able to use automatic translation."),
+                    actions: [
+                      TextButton(
+                        onPressed: () =>
+                            SharedPreferences.getInstance().then((prefs) {
+                          prefs.setBool("showLanguageDownloadPrompt", false);
+                          Navigator.pop(context);
+                        }),
+                        child: const Text("Never",
+                            style: TextStyle(color: ThemeColors.deleteColor)),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Not now"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          for (var languageCode in notDownloadedLanguages) {
+                            languageModelManager.downloadModel(languageCode,
+                                isWifiRequired: false);
+                          }
+                          Navigator.pop(context);
+                        },
+                        child: const Text("Yes"),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            )
-          : null;
-    }
+                );
+              }
+            }
+          })
+        : null;
   }
 
   @override
   void initState() {
     super.initState();
-    _loadLanguages();
+    _loadLanguages().then((value) => {
+          checkNetworkAndPrompt(context),
+        });
 
     SharedPreferences.getInstance().then((prefs) {
       nativeCountryCode = prefs.getString('nativeCountryCode') ?? "";
     });
-
-    checkNetworkAndPrompt(context);
 
     // Initialize the AnimationController
     _controller = AnimationController(
@@ -83,12 +132,11 @@ class _HomePageState extends State<HomePage>
       ..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
           _controller.reset(); // Reset after shaking
-          _showDeleteDialog();
         }
       });
   }
 
-  Future<void> _loadLanguages() async {
+  Future<bool> _loadLanguages() async {
     try {
       final db = DatabaseHelper.instance;
       var langList = await db.getLanguages();
@@ -101,8 +149,10 @@ class _HomePageState extends State<HomePage>
                 : 4;
         rowCount = (languages.length / columnCount).ceil();
       });
+      return true;
     } catch (e) {
       Logger().e("Error loading languages: $e");
+      return false;
     }
   }
 
@@ -117,14 +167,18 @@ class _HomePageState extends State<HomePage>
     Language lang =
         languages.firstWhere((l) => l.languageCode == shakingLanguageCode);
 
-    if (lang.languageCards == null || lang.languageCards!.isEmpty) {
-      manageLanguageModel(getLanguageCode(lang.languageCode, context),
-          ManageLanguageModelAction.DELETE);
-      // Delete immediately if no cards exist
-      await DatabaseHelper.instance.deleteLanguage(lang.languageId!);
+    // Get the cards corresponding to the language
+    var cards = await DatabaseHelper.instance
+        .getCards(0, lang.languageId!, true); // 0 and true for all cards
+
+    if (cards.isEmpty) {
+      // manageLanguageModel(getLanguageCode(lang.languageCode, context),
+      //     ManageLanguageModelAction.DELETE);
+      // // Delete immediately if no cards exist
+      // await DatabaseHelper.instance.deleteLanguage(lang.languageId!);
       _loadLanguages();
     } else {
-      bool? confirmDelete = await showDialog(
+      showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text("Delete ${lang.languageName}?"),
@@ -141,15 +195,15 @@ class _HomePageState extends State<HomePage>
             ),
           ],
         ),
-      );
-
-      if (confirmDelete == true) {
-        manageLanguageModel(getLanguageCode(lang.languageCode, context),
-            ManageLanguageModelAction.DELETE);
-
-        await DatabaseHelper.instance.deleteLanguage(lang.languageId!);
-        _loadLanguages();
-      }
+      ).then((value) => {
+            if (value == true)
+              {
+                // manageLanguageModel(getLanguageCode(lang.languageCode, context),
+                //     ManageLanguageModelAction.DELETE),
+                // DatabaseHelper.instance.deleteLanguage(lang.languageId!),
+                _loadLanguages()
+              }
+          });
     }
     setState(() => shakingLanguageCode = null); // Reset the shaking effect
   }
@@ -228,8 +282,12 @@ class _HomePageState extends State<HomePage>
                                       ),
                                     );
                                   },
-                                  onLongPress: () =>
-                                      _triggerShake(lang.languageCode),
+                                  onLongPress: () => {
+                                    _triggerShake(lang.languageCode),
+                                    Logger().i(
+                                        "Long press on ${lang.languageName}"),
+                                    _showDeleteDialog()
+                                  },
                                   style: ElevatedButton.styleFrom(
                                     fixedSize: const Size(90, 60),
                                     padding: EdgeInsets.zero,

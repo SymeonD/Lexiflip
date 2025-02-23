@@ -76,7 +76,6 @@ class _PlayPageState extends State<PlayPage> {
   @override
   void initState() {
     super.initState();
-    Logger().i("Starting play page, car mode: ${widget.carMode}");
     _controllerCenter =
         ConfettiController(duration: const Duration(seconds: 1));
     _loadCards().then((value) => {
@@ -394,7 +393,6 @@ class _PlayPageState extends State<PlayPage> {
 
                     // After the swipe is finished
                     onSwipe: (previousIndex, currentIndex, direction) {
-                      Logger().i("Swiped: $direction");
                       setState(() {
                         // Reset hint state
                         hint = false;
