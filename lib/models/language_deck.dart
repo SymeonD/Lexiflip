@@ -13,4 +13,22 @@ class LanguageDeck {
       required this.languageId,
       required this.languageDeckName,
       this.isDefault});
+
+      // To Json
+  Map<String, dynamic> toJson() => {
+        'languageDeckId': languageDeckId,
+        'languageDeckCards': languageDeckCards,
+        'languageId': languageId,
+        'languageDeckName': languageDeckName,
+        'isDefault': isDefault,
+      };
+
+      // From Json
+  factory LanguageDeck.fromJson(Map<String, dynamic> json) => LanguageDeck(
+        languageDeckId: json['languageDeckId'],
+        languageDeckCards: json['languageDeckCards'],
+        languageId: json['languageId'],
+        languageDeckName: json['languageDeckName'],
+        isDefault: json['isDefault'],
+      );
 }
