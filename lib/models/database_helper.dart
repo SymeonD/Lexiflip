@@ -138,7 +138,7 @@ class DatabaseHelper {
           languageDeckId: maps[i]['id'] as int,
           languageId: maps[i]['languageId'] as int,
           languageDeckName: maps[i]['languageDeckName'] as String,
-          isDefault: maps[i]['isDefault'] == 1 ? true : false,
+          isDefault: maps[i]['isDefault'] == 'true' ? true : false,
         );
       });
     } catch (e) {

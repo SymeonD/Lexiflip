@@ -49,6 +49,8 @@ class _CardDialogViewState extends State<CardDialogView> {
   final languageModel = OnDeviceTranslatorModelManager();
   bool isModelDownloaded = false;
 
+  bool isButtonEnabled = false;
+
   Future<String> translateText(String text, String from, String to) async {
     final translator = OnDeviceTranslator(
       sourceLanguage: BCP47Code.fromRawValue(from)!,
@@ -86,6 +88,20 @@ class _CardDialogViewState extends State<CardDialogView> {
 
     languageModel.isModelDownloaded(nativeLanguage).then(
         (value) => {Logger().d("Model $nativeLanguage downloaded: $value")});
+
+    nativeTextController.addListener(() {
+      setState(() {
+        isButtonEnabled = nativeTextController.text.isNotEmpty &&
+            localTextController.text.isNotEmpty;
+      });
+    });
+
+    localTextController.addListener(() {
+      setState(() {
+        isButtonEnabled = nativeTextController.text.isNotEmpty &&
+            localTextController.text.isNotEmpty;
+      });
+    });
 
     super.initState();
   }
@@ -401,50 +417,55 @@ class _CardDialogViewState extends State<CardDialogView> {
                       child: IconButton(
                         disabledColor: ThemeColors.disabledColor,
                         color: ThemeColors.primaryColor,
-                        onPressed: () {
-                          if (widget.languageCard == null) {
-                            // Add the card into the database
-                            DatabaseHelper.instance
-                                .insertCard(
-                                  LanguageCard(
-                                    languageId: widget.language.languageId!,
-                                    nativeText: nativeTextController.text,
-                                    nativeNote: nativeNoteController.text,
-                                    localText: localTextController.text,
-                                    localRomanization:
-                                        localRomanizationController.text,
-                                  ),
-                                )
-                                .then((newCardId) => {
-                                      if (!widget.languageDeck.isDefault! &&
-                                          newCardId != -1)
-                                        {
-                                          DatabaseHelper.instance
-                                              .addCardToDeck(
-                                                  widget.languageDeck
-                                                      .languageDeckId!,
-                                                  newCardId)
-                                              .then((value) => {}),
-                                        }
-                                    });
-                            // If the deck is not 'all cards', add the card to the deck
-                          } else {
-                            // Edit the card
-                            DatabaseHelper.instance.updateCard(
-                              LanguageCard(
-                                languageId: widget.languageCard!.languageId,
-                                languageCardId:
-                                    widget.languageCard!.languageCardId,
-                                nativeText: nativeTextController.text,
-                                nativeNote: nativeNoteController.text,
-                                localText: localTextController.text,
-                                localRomanization:
-                                    localRomanizationController.text,
-                              ),
-                            );
-                          }
-                          Navigator.of(context).pop();
-                        },
+                        onPressed: isButtonEnabled
+                            ? () {
+                                if (widget.languageCard == null) {
+                                  // Add the card into the database
+                                  DatabaseHelper.instance
+                                      .insertCard(
+                                        LanguageCard(
+                                          languageId:
+                                              widget.language.languageId!,
+                                          nativeText: nativeTextController.text,
+                                          nativeNote: nativeNoteController.text,
+                                          localText: localTextController.text,
+                                          localRomanization:
+                                              localRomanizationController.text,
+                                        ),
+                                      )
+                                      .then((newCardId) => {
+                                            if (!widget
+                                                    .languageDeck.isDefault! &&
+                                                newCardId != -1)
+                                              {
+                                                DatabaseHelper.instance
+                                                    .addCardToDeck(
+                                                        widget.languageDeck
+                                                            .languageDeckId!,
+                                                        newCardId)
+                                                    .then((value) => {}),
+                                              }
+                                          });
+                                  // If the deck is not 'all cards', add the card to the deck
+                                } else {
+                                  // Edit the card
+                                  DatabaseHelper.instance.updateCard(
+                                    LanguageCard(
+                                      languageId:
+                                          widget.languageCard!.languageId,
+                                      languageCardId:
+                                          widget.languageCard!.languageCardId,
+                                      nativeText: nativeTextController.text,
+                                      nativeNote: nativeNoteController.text,
+                                      localText: localTextController.text,
+                                      localRomanization:
+                                          localRomanizationController.text,
+                                    ),
+                                  );
+                                }
+                                Navigator.of(context).pop();
+                              }
+                            : null,
                         icon: const Icon(
                           Icons.check,
                           size: 40,
