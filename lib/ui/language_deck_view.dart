@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
@@ -6,8 +8,11 @@ import 'package:cards/models/language_deck.dart';
 import 'package:cards/pages/language_deck_cards_page.dart';
 import 'package:cards/pages/play_page.dart';
 import 'package:cards/ui/deck_dialog_view.dart';
+import 'package:cards/utils/handle_share_permissions.dart';
 import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
+import 'package:nearby_connections/nearby_connections.dart';
 
 class LanguageDeckView extends StatefulWidget {
   final Language language;
@@ -79,7 +84,11 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   PopupMenuButton<String>(
-                    onSelected: (value) {
+                    onSelected: (value) async {
+                      // Then start the connection
+                      const String userName = "Symeon";
+                      const Strategy strategy = Strategy.P2P_STAR;
+
                       // Handle menu selection
                       if (value == "edit" && !widget.languageDeck.isDefault!) {
                         // Edit the deck
@@ -95,7 +104,96 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                       } else if (value == "share") {
                         // Share the deck
                         // Show a bar at the bottom of the screen with a text 'Coming soon'
-                        showCustomSnackBar(context, "Coming soon", 2);
+                        await handleShare(context);
+
+                        await Nearby().startAdvertising(userName, strategy,
+                            onConnectionInitiated: (id, info) {
+                          Nearby().acceptConnection(id,
+                              onPayLoadRecieved: (endpointId, payload) {
+                            // Handle received payload here
+                            // For example, you can decode the payload and show it in a dialog
+                            showCustomSnackBar(context, "payload received", 2);
+                          }, onPayloadTransferUpdate: (endpointId, update) {
+                            // Handle progress or completion here
+                            Logger()
+                                .i("Payload transfer update: ${update.status}");
+                          });
+                          showCustomSnackBar(
+                              context, "connection initiated", 2);
+                        }, onConnectionResult: (id, status) {
+                          if (status == Status.CONNECTED) {
+                            showCustomSnackBar(
+                                context, "Connection successful", 2);
+
+                            // Create the payload
+                            final payload = {
+                              "deckId": widget.languageDeck.languageDeckId,
+                              "deckName": widget.languageDeck.languageDeckName,
+                              "languageId": widget.language.languageId,
+                              "languageName": widget.language.languageName,
+                            };
+                            final bytes = utf8.encode(jsonEncode(payload));
+                            // Send the payload
+                            Nearby().sendBytesPayload(id, bytes).then((_) {
+                              showCustomSnackBar(context, "Payload sent", 2);
+                            }).catchError((error) {
+                              showCustomSnackBar(
+                                  context, "Failed to send payload: $error", 2);
+                            });
+                          } else {
+                            showCustomSnackBar(context, "Connection failed", 2);
+                          }
+                        }, onDisconnected: (id) {
+                          showCustomSnackBar(context, "Disconnected", 2);
+                        });
+                      } else if (value == "receive") {
+                        await Nearby().startDiscovery(userName, strategy,
+                            onEndpointFound: (id, name, serviceId) {
+                          showCustomSnackBar(
+                              context, "endpoint found $name", 2);
+                          // Optionally initiate connection here:
+                          Nearby().requestConnection(userName, id,
+                              onConnectionInitiated: (id, info) {
+                            Nearby().acceptConnection(id,
+                                onPayLoadRecieved: (endpointId, payload) {
+                              // Create a new deck from the payload
+                              final data = utf8.decode(payload.bytes!);
+                              final jsonData = jsonDecode(data);
+                              final deckName = jsonData["deckName"];
+                              final languageId = jsonData["languageId"];
+                              // Add the deck to the database
+                              DatabaseHelper.instance
+                                  .insertDeck(languageId, deckName)
+                                  .then((val) {
+                                widget.onDelete();
+                                setState(() {
+                                  // Remove the deck from the list
+                                });
+                              });
+                              // Reload the page
+
+                              showCustomSnackBar(context,
+                                  "Payload received: ${payload.toString()}", 2);
+                            }, onPayloadTransferUpdate: (endpointId, update) {
+                              // Handle progress or completion here
+                            });
+
+                            showCustomSnackBar(
+                                context, "connection initiated", 2);
+                          }, onConnectionResult: (id, status) {
+                            if (status == Status.CONNECTED) {
+                              showCustomSnackBar(
+                                  context, "Connection successful", 2);
+                            } else {
+                              showCustomSnackBar(
+                                  context, "Connection failed", 2);
+                            }
+                          }, onDisconnected: (id) {
+                            showCustomSnackBar(context, "Disconnected", 2);
+                          });
+                        }, onEndpointLost: (id) {
+                          showCustomSnackBar(context, "Endpoint lost", 2);
+                        });
                       } else if (value == "delete") {
                         // Delete the deck, show a confirmation dialog if more than 0 cards
                         if (_deckCardCount > 0) {
@@ -180,6 +278,23 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                     color: ThemeColors.primaryFontColor),
                                 SizedBox(width: 10),
                                 Text("Share"),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: "receive",
+                        height: 35,
+                        child: IntrinsicWidth(
+                          child: SizedBox(
+                            width: 100,
+                            child: Row(
+                              children: [
+                                Icon(Icons.download_outlined,
+                                    color: ThemeColors.primaryFontColor),
+                                SizedBox(width: 10),
+                                Text("Receive"),
                               ],
                             ),
                           ),

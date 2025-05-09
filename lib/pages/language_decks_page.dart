@@ -157,16 +157,30 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         color: ThemeColors.backgroundColor,
-                        child: const Center(
-                          child: Text(
-                            '+',
-                            style: TextStyle(
-                              fontSize: 48,
-                              fontWeight: FontWeight.bold,
-                              color: ThemeColors.secondaryFontColor,
-                            ),
-                          ),
-                        ),
+                        child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Icon(
+                                    Icons.download_outlined,
+                                    size: 30,
+                                    color: ThemeColors.secondaryFontColor,
+                                  ),
+                                ],
+                              ),
+                              Center(
+                                child: Text(
+                                  '+',
+                                  style: TextStyle(
+                                    fontSize: 48,
+                                    fontWeight: FontWeight.bold,
+                                    color: ThemeColors.secondaryFontColor,
+                                  ),
+                                ),
+                              ),
+                            ]),
                       ),
                     ),
                   );
