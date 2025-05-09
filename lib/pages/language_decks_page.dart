@@ -1,13 +1,20 @@
+import 'dart:convert';
+
 import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/language.dart';
+import 'package:cards/models/language_card.dart';
 import 'package:cards/models/language_deck.dart';
 import 'package:cards/ui/deck_dialog_view.dart';
 import 'package:cards/ui/language_deck_view.dart';
 import 'package:cards/ui/search_bar_view.dart';
+import 'package:cards/utils/handle_share_permissions.dart';
+import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:logger/web.dart';
+import 'package:nearby_connections/nearby_connections.dart';
 
 class LanguageDecksPage extends StatefulWidget {
   final Language language;
@@ -70,6 +77,9 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
 
   @override
   Widget build(BuildContext context) {
+    bool isDiscovering = false;
+    const String userName = "LexiFlip";
+    const Strategy strategy = Strategy.P2P_STAR;
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -157,20 +167,123 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
                           borderRadius: BorderRadius.circular(15.0),
                         ),
                         color: ThemeColors.backgroundColor,
-                        child: const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
-                                  Icon(
-                                    Icons.download_outlined,
-                                    size: 30,
-                                    color: ThemeColors.secondaryFontColor,
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.download_outlined,
+                                      color: ThemeColors.secondaryFontColor,
+                                      size: 30,
+                                    ),
+                                    onPressed: () async {
+                                      if (isDiscovering) return;
+                                      await handleShare(context);
+
+                                      isDiscovering = true;
+
+                                      Future.delayed(
+                                          const Duration(seconds: 30), () {
+                                        Nearby().stopDiscovery();
+                                        isDiscovering = false;
+                                        showCustomSnackBar(
+                                            context, "Discovery stopped", 2);
+                                      });
+
+                                      await Nearby().startDiscovery(
+                                          userName, strategy, onEndpointFound:
+                                              (id, name, serviceId) {
+                                        showCustomSnackBar(
+                                            context, "endpoint found $name", 2);
+                                        // Optionally initiate connection here:
+                                        Nearby().requestConnection(userName, id,
+                                            onConnectionInitiated: (id, info) {
+                                          Nearby().acceptConnection(id,
+                                              onPayLoadRecieved:
+                                                  (endpointId, payload) async {
+                                            // Create a new deck from the payload
+                                            final data =
+                                                utf8.decode(payload.bytes!);
+                                            final jsonData = jsonDecode(data);
+                                            final deckName =
+                                                jsonData["deck"]["deckName"];
+                                            final languageId =
+                                                jsonData["deck"]["languageId"];
+                                            // Add the deck to the database
+                                            await DatabaseHelper.instance
+                                                .insertDeck(
+                                                    languageId, deckName)
+                                                .then((deckId) => {
+                                                      jsonData["cards"]
+                                                          .forEach((card) {
+                                                        Logger()
+                                                            .i("Card: $card");
+                                                        DatabaseHelper.instance
+                                                            .insertCard(LanguageCard(
+                                                                languageId:
+                                                                    languageId,
+                                                                nativeText: card[
+                                                                    "nativeText"],
+                                                                nativeNote: card[
+                                                                    "nativeNote"],
+                                                                localText: card[
+                                                                    "localText"],
+                                                                localRomanization:
+                                                                    card[
+                                                                        "localRomanization"]))
+                                                            .then((cardId) => {
+                                                                  DatabaseHelper
+                                                                      .instance
+                                                                      .addCardToDeck(
+                                                                          deckId,
+                                                                          cardId)
+                                                                });
+                                                      }),
+                                                    });
+
+                                            // Reload the page
+                                            _loadLanguageDecks();
+
+                                            showCustomSnackBar(
+                                                context,
+                                                "Payload received: ${payload.toString()}",
+                                                2);
+                                          }, onPayloadTransferUpdate:
+                                                  (endpointId, update) {
+                                            // Handle progress or completion here
+                                          });
+
+                                          showCustomSnackBar(context,
+                                              "connection initiated", 2);
+                                        }, onConnectionResult: (id, status) {
+                                          if (status == Status.CONNECTED) {
+                                            showCustomSnackBar(context,
+                                                "Connection successful", 2);
+                                          } else {
+                                            showCustomSnackBar(context,
+                                                "Connection failed", 2);
+                                          }
+                                        }, onDisconnected: (id) {
+                                          showCustomSnackBar(
+                                              context, "Disconnected", 2);
+                                          // Stop discovery if needed
+                                          Nearby().stopDiscovery();
+                                          isDiscovering = false;
+                                        });
+                                      }, onEndpointLost: (id) {
+                                        showCustomSnackBar(
+                                            context, "Endpoint lost", 2);
+                                        Nearby().stopDiscovery();
+                                        isDiscovering = false;
+                                      });
+                                    },
                                   ),
                                 ],
                               ),
-                              Center(
+                              const Center(
                                 child: Text(
                                   '+',
                                   style: TextStyle(
@@ -179,6 +292,15 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
                                     color: ThemeColors.secondaryFontColor,
                                   ),
                                 ),
+                              ),
+                              const Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  //empty space
+                                  SizedBox(
+                                    height: 50,
+                                  ),
+                                ],
                               ),
                             ]),
                       ),

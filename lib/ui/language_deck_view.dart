@@ -86,7 +86,7 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                   PopupMenuButton<String>(
                     onSelected: (value) async {
                       // Then start the connection
-                      const String userName = "Symeon";
+                      const String userName = "LexiFlip";
                       const Strategy strategy = Strategy.P2P_STAR;
 
                       // Handle menu selection
@@ -120,18 +120,34 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                           });
                           showCustomSnackBar(
                               context, "connection initiated", 2);
-                        }, onConnectionResult: (id, status) {
+                        }, onConnectionResult: (id, status) async {
                           if (status == Status.CONNECTED) {
                             showCustomSnackBar(
                                 context, "Connection successful", 2);
 
                             // Create the payload
-                            final payload = {
-                              "deckId": widget.languageDeck.languageDeckId,
+                            final deckload = {
                               "deckName": widget.languageDeck.languageDeckName,
                               "languageId": widget.language.languageId,
-                              "languageName": widget.language.languageName,
                             };
+                            final payload = {
+                              "deck": deckload,
+                              "cards": [],
+                            };
+                            // Get the cards in the deck
+                            final cards = await DatabaseHelper.instance
+                                .getCards(widget.languageDeck.languageDeckId!,
+                                    widget.languageDeck.languageId);
+                            // Add the cards to the payload
+                            payload["cards"] = cards
+                                .map((card) => {
+                                      "nativeText": card!.nativeText,
+                                      "nativeNote": card.nativeNote,
+                                      "localText": card.localText,
+                                      "localRomanization":
+                                          card.localRomanization,
+                                    })
+                                .toList();
                             final bytes = utf8.encode(jsonEncode(payload));
                             // Send the payload
                             Nearby().sendBytesPayload(id, bytes).then((_) {
@@ -145,54 +161,6 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                           }
                         }, onDisconnected: (id) {
                           showCustomSnackBar(context, "Disconnected", 2);
-                        });
-                      } else if (value == "receive") {
-                        await Nearby().startDiscovery(userName, strategy,
-                            onEndpointFound: (id, name, serviceId) {
-                          showCustomSnackBar(
-                              context, "endpoint found $name", 2);
-                          // Optionally initiate connection here:
-                          Nearby().requestConnection(userName, id,
-                              onConnectionInitiated: (id, info) {
-                            Nearby().acceptConnection(id,
-                                onPayLoadRecieved: (endpointId, payload) {
-                              // Create a new deck from the payload
-                              final data = utf8.decode(payload.bytes!);
-                              final jsonData = jsonDecode(data);
-                              final deckName = jsonData["deckName"];
-                              final languageId = jsonData["languageId"];
-                              // Add the deck to the database
-                              DatabaseHelper.instance
-                                  .insertDeck(languageId, deckName)
-                                  .then((val) {
-                                widget.onDelete();
-                                setState(() {
-                                  // Remove the deck from the list
-                                });
-                              });
-                              // Reload the page
-
-                              showCustomSnackBar(context,
-                                  "Payload received: ${payload.toString()}", 2);
-                            }, onPayloadTransferUpdate: (endpointId, update) {
-                              // Handle progress or completion here
-                            });
-
-                            showCustomSnackBar(
-                                context, "connection initiated", 2);
-                          }, onConnectionResult: (id, status) {
-                            if (status == Status.CONNECTED) {
-                              showCustomSnackBar(
-                                  context, "Connection successful", 2);
-                            } else {
-                              showCustomSnackBar(
-                                  context, "Connection failed", 2);
-                            }
-                          }, onDisconnected: (id) {
-                            showCustomSnackBar(context, "Disconnected", 2);
-                          });
-                        }, onEndpointLost: (id) {
-                          showCustomSnackBar(context, "Endpoint lost", 2);
                         });
                       } else if (value == "delete") {
                         // Delete the deck, show a confirmation dialog if more than 0 cards
@@ -278,23 +246,6 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                     color: ThemeColors.primaryFontColor),
                                 SizedBox(width: 10),
                                 Text("Share"),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const PopupMenuItem(
-                        value: "receive",
-                        height: 35,
-                        child: IntrinsicWidth(
-                          child: SizedBox(
-                            width: 100,
-                            child: Row(
-                              children: [
-                                Icon(Icons.download_outlined,
-                                    color: ThemeColors.primaryFontColor),
-                                SizedBox(width: 10),
-                                Text("Receive"),
                               ],
                             ),
                           ),
