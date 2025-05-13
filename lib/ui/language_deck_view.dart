@@ -103,7 +103,7 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                             });
                       } else if (value == "share") {
                         // Share the deck
-                        // Show a bar at the bottom of the screen with a text 'Coming soon'
+                        // check for rights
                         await handleShare(context);
 
                         await Nearby().startAdvertising(userName, strategy,
