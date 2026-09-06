@@ -152,29 +152,41 @@ class _PlayPageState extends State<PlayPage> {
         cardTts.setLanguage(nativeTtsCode).then((_) {
           if (!mounted ||
               !_isAutoPlaying ||
-              currentSessionId != _autoPlaySessionId) return;
+              currentSessionId != _autoPlaySessionId) {
+            return;
+          }
           cardTts.speak(cards[0]!.nativeText).then((_) {
             if (!mounted ||
                 !_isAutoPlaying ||
-                currentSessionId != _autoPlaySessionId) return;
+                currentSessionId != _autoPlaySessionId) {
+              return;
+            }
             Future.delayed(const Duration(seconds: 3), () {
               if (!mounted ||
                   !_isAutoPlaying ||
-                  currentSessionId != _autoPlaySessionId) return;
+                  currentSessionId != _autoPlaySessionId) {
+                return;
+              }
               flipCardControllers[0].flipcard();
 
               cardTts.setLanguage(localTtsCode).then((_) {
                 if (!mounted ||
                     !_isAutoPlaying ||
-                    currentSessionId != _autoPlaySessionId) return;
+                    currentSessionId != _autoPlaySessionId) {
+                  return;
+                }
                 cardTts.speak(cards[0]!.localText).then((_) {
                   if (!mounted ||
                       !_isAutoPlaying ||
-                      currentSessionId != _autoPlaySessionId) return;
+                      currentSessionId != _autoPlaySessionId) {
+                    return;
+                  }
                   Future.delayed(const Duration(seconds: 3), () {
                     if (!mounted ||
                         !_isAutoPlaying ||
-                        currentSessionId != _autoPlaySessionId) return;
+                        currentSessionId != _autoPlaySessionId) {
+                      return;
+                    }
                     flipCardControllers[0].flipcard();
                     swiperController.swipe(CardSwiperDirection.right);
 
