@@ -234,10 +234,11 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                         ),
                       ),
                       // Share option
-                      const PopupMenuItem(
+                      PopupMenuItem(
+                        enabled: widget.languageDeck.languageDeckCards != null && widget.languageDeck.languageDeckCards!.isNotEmpty,
                         value: "share",
                         height: 35,
-                        child: IntrinsicWidth(
+                        child: const IntrinsicWidth(
                           child: SizedBox(
                             width: 100,
                             child: Row(
