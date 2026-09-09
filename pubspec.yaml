@@ -54,6 +54,7 @@ dependencies:
   nearby_connections: ^4.3.0
   permission_handler: ^11.3.1
   location: ^7.0.1
+  volume_controller: ^3.6.1
 
 dev_dependencies:
   flutter_test:

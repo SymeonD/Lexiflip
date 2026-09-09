@@ -7,6 +7,7 @@ import 'package:cards/models/language.dart';
 import 'package:cards/models/language_card.dart';
 import 'package:cards/models/language_deck.dart';
 import 'package:cards/utils/country_to_language.dart';
+import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:confetti/confetti.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 class PlayPage extends StatefulWidget {
   const PlayPage(
@@ -566,7 +568,13 @@ class _PlayPageState extends State<PlayPage> {
             Align(
               alignment: Alignment.topRight,
               child: IconButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    final currentVolume = await VolumeController.instance.getVolume();
+                    if(currentVolume == 0.0) {
+                     if(context.mounted) {
+                      showCustomSnackBar(context, "Volume is muted. Please increase the volume to hear the pronunciation.", 3);
+                     }
+                    }
                     try {
                       cardTts.setLanguage(localTtsCode);
                       cardTts.speak(card!.localText);
