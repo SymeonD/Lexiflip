@@ -348,7 +348,7 @@ class _CardDialogViewState extends State<CardDialogView> {
                                             ThemeColors.secondaryWhiteFontColor,
                                         height: 0.1,
                                       ),
-                                      hintText: 'This card\'s word',
+                                      hintText: 'This card\'s translation',
                                       hintStyle: TextStyle(
                                           fontSize: 24,
                                           fontWeight: FontWeight.w500,
