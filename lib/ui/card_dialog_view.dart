@@ -416,6 +416,44 @@ class _CardDialogViewState extends State<CardDialogView> {
                       child: IconButton(
                         disabledColor: ThemeColors.disabledColor,
                         color: ThemeColors.primaryColor,
+                        onPressed: () { 
+                          isButtonEnabled ? showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text('Discard changes?'),
+                                content: const Text(
+                                    'Are you sure you want to discard your changes?'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: const Text('Cancel'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: const Text('Discard'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop(); // Close the dialog
+                                      Navigator.of(context).pop(); // Close the CardDialogView
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          ) : Navigator.of(context).pop();
+                        },
+                        icon: const Icon(
+                          Icons.clear,
+                          size: 40,
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: IconButton(
+                        disabledColor: ThemeColors.disabledColor,
+                        color: ThemeColors.primaryColor,
                         onPressed: isButtonEnabled
                             ? () {
                                 if (widget.languageCard == null) {
