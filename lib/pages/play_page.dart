@@ -91,36 +91,35 @@ class _PlayPageState extends State<PlayPage> {
     cardTts.awaitSpeakCompletion(true);
     Completer<void> completer = Completer();
 
-    // Set the tts
-    SharedPreferences.getInstance().then((prefs) => {
-          cardTts.getLanguages.then((languages) => {
-                languages.forEach((lang) => {
-                      lang.toString().split("-")[0] ==
-                              getLanguageCode(
-                                  widget.language.languageCode, context)
-                          ? {
-                              localTtsCode = lang,
-                              Logger().i("Found : $lang for local")
-                            }
-                          : "",
-                      lang == "${getLanguageCode(prefs.getString("nativeLanguageCode")!, context)}-${prefs.getString("nativeLanguageCode")!.toUpperCase()}"
-                          ? {
-                              nativeTtsCode = lang,
-                              Logger().i("Found : $lang for native")
-                            }
-                          : "",
-                      // If both values are found, complete the future
-                      if ((localTtsCode != 'en-US' &&
-                              nativeTtsCode != 'en-US' &&
-                              !completer.isCompleted) ||
-                          ((languages.indexOf(lang) == languages.length - 1) &&
-                              !completer.isCompleted))
-                        {completer.complete()}
-                    })
-              })
-        });
+    final prefs = await SharedPreferences.getInstance();
+    final languages = await cardTts.getLanguages;
 
-    await completer.future;
+    final targetLocalCode = getLanguageCode(widget.language.languageCode);
+    final nativeLangCode = prefs.getString("nativeLanguageCode") ?? 'en';
+    final targetNativeCode = "${getLanguageCode(nativeLangCode)}-${nativeLangCode.toUpperCase()}";
+
+    for(final lang in languages) {
+      final langStr = lang.toString();
+
+      if(langStr.split("-")[0] == targetLocalCode) {
+        localTtsCode = langStr;
+      }
+
+      if(langStr == targetNativeCode) {
+        nativeTtsCode = langStr;
+      }
+
+      // If both values are found, complete the future
+      final bothFound = (localTtsCode != 'en-US' && nativeTtsCode != 'en-US');
+      if(bothFound && !completer.isCompleted) {
+        completer.complete();
+        break; // Exit the loop early since we found both languages
+      }
+    }
+
+    if(!completer.isCompleted) {
+      completer.complete(); // Complete the future even if not both languages are found
+    }
 
     return true;
   }

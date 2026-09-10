@@ -75,7 +75,7 @@ class _CardDialogViewState extends State<CardDialogView> {
     SharedPreferences.getInstance().then((prefs) {
       nativeLanguage = prefs.getString('nativeLanguageCode') ?? "fr";
     });
-    localLanguage = getLanguageCode(widget.language.languageCode, context);
+    localLanguage = getLanguageCode(widget.language.languageCode);
 
     languageModel.isModelDownloaded(localLanguage).then((value) => {
           setState(() {

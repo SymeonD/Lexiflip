@@ -52,7 +52,7 @@ class _HomePageState extends State<HomePage>
 
               // Get the corresponding language codes
               allLanguages = allLanguages
-                  .map((lang) => getLanguageCode(lang, context))
+                  .map((lang) => getLanguageCode(lang))
                   .toList();
 
               var notDownloadedLanguages = [];
@@ -172,7 +172,7 @@ class _HomePageState extends State<HomePage>
         .getCards(0, lang.languageId!, true); // 0 and true for all cards
 
     if (cards.isEmpty) {
-      manageLanguageModel(getLanguageCode(lang.languageCode, context),
+      manageLanguageModel(getLanguageCode(lang.languageCode),
           ManageLanguageModelAction.DELETE);
       // Delete immediately if no cards exist
       await DatabaseHelper.instance.deleteLanguage(lang.languageId!);
@@ -198,7 +198,7 @@ class _HomePageState extends State<HomePage>
       ).then((value) => {
             if (value == true)
               {
-                manageLanguageModel(getLanguageCode(lang.languageCode, context),
+                manageLanguageModel(getLanguageCode(lang.languageCode),
                     ManageLanguageModelAction.DELETE),
                 DatabaseHelper.instance.deleteLanguage(lang.languageId!),
                 _loadLanguages()
@@ -286,7 +286,7 @@ class _HomePageState extends State<HomePage>
                                     _triggerShake(lang.languageCode),
                                     await languageModelManager
                                         .isModelDownloaded(getLanguageCode(
-                                            lang.languageCode, context))
+                                            lang.languageCode))
                                         .then((isModelDownloaded) => showMenu(
                                               context: context,
                                               position: _getPosition(context),
@@ -351,7 +351,7 @@ class _HomePageState extends State<HomePage>
                                         menuChoice == "download"
                                             ? manageLanguageModel(
                                                 getLanguageCode(
-                                                    lang.languageCode, context),
+                                                    lang.languageCode),
                                                 ManageLanguageModelAction
                                                     .DOWNLOAD)
                                             : _showDeleteDialog();
@@ -388,7 +388,7 @@ class _HomePageState extends State<HomePage>
                                     languageName: newLang.name,
                                   ));
                                   manageLanguageModel(
-                                      getLanguageCode(newLang.code, context),
+                                      getLanguageCode(newLang.code),
                                       ManageLanguageModelAction.DOWNLOAD);
                                   _loadLanguages();
                                 } catch (e) {
