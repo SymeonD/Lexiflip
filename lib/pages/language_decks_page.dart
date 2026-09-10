@@ -190,14 +190,14 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
                                         Nearby().stopDiscovery();
                                         isDiscovering = false;
                                         showCustomSnackBar(
-                                            context, "Discovery stopped", 2);
+                                            "Discovery stopped", 2);
                                       });
 
                                       await Nearby().startDiscovery(
                                           userName, strategy, onEndpointFound:
                                               (id, name, serviceId) {
                                         showCustomSnackBar(
-                                            context, "endpoint found $name", 2);
+                                            "endpoint found $name", 2);
                                         // Optionally initiate connection here:
                                         Nearby().requestConnection(userName, id,
                                             onConnectionInitiated: (id, info) {
@@ -248,7 +248,6 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
                                             _loadLanguageDecks();
 
                                             showCustomSnackBar(
-                                                context,
                                                 "Payload received: ${payload.toString()}",
                                                 2);
                                           }, onPayloadTransferUpdate:
@@ -256,26 +255,24 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
                                             // Handle progress or completion here
                                           });
 
-                                          showCustomSnackBar(context,
+                                          showCustomSnackBar(
                                               "connection initiated", 2);
                                         }, onConnectionResult: (id, status) {
                                           if (status == Status.CONNECTED) {
-                                            showCustomSnackBar(context,
+                                            showCustomSnackBar(
                                                 "Connection successful", 2);
                                           } else {
-                                            showCustomSnackBar(context,
+                                            showCustomSnackBar(
                                                 "Connection failed", 2);
                                           }
                                         }, onDisconnected: (id) {
-                                          showCustomSnackBar(
-                                              context, "Disconnected", 2);
+                                          showCustomSnackBar("Disconnected", 2);
                                           // Stop discovery if needed
                                           Nearby().stopDiscovery();
                                           isDiscovering = false;
                                         });
                                       }, onEndpointLost: (id) {
-                                        showCustomSnackBar(
-                                            context, "Endpoint lost", 2);
+                                        showCustomSnackBar("Endpoint lost", 2);
                                         Nearby().stopDiscovery();
                                         isDiscovering = false;
                                       });

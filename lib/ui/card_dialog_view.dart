@@ -244,7 +244,6 @@ class _CardDialogViewState extends State<CardDialogView> {
                                               :
                                               // Show snackbar saying the model is not downloaded
                                               showCustomSnackBar(
-                                                  context,
                                                   'Model not downloaded yet',
                                                   2,
                                                 );

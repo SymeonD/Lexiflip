@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:cards/main.dart';
+import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
@@ -18,29 +19,14 @@ void manageLanguageModel(
 
   receivePort.listen((message) {
     // Close Snackbar when download is completed
-    scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
+    scaffoldMessengerKey.currentState?.clearSnackBars();
     // Show "Download Complete" for 500ms
-    scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
-      content: ManageLanguageModelAction.DOWNLOAD == action
-          ? const Text("Language downloaded ✅")
-          : const Text("Language deleted ✅"),
-      duration: const Duration(milliseconds: 1000),
-      action: SnackBarAction(
-        label: "Dismiss",
-        onPressed: () {
-          scaffoldMessengerKey.currentState?.hideCurrentSnackBar();
-        },
-      ),
-      behavior: SnackBarBehavior.floating,
-      margin: const EdgeInsets.only(
-        bottom: 20, // Adjust to control height from bottom
-        left: 20, // 5% margin on left
-        right: 20, // 5% margin on right
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12), // Rounded corners
-      ),
-    ));
+    showCustomSnackBar(
+      ManageLanguageModelAction.DOWNLOAD == action
+          ? "Language downloaded ✅"
+          : "Language deleted ✅",
+      1,
+    );
     receivePort.close(); // Close the receive port after receiving the message
     isolate?.kill(priority: Isolate.immediate); // Kill the isolate
   });

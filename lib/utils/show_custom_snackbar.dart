@@ -1,9 +1,9 @@
 import 'package:cards/main.dart';
 import 'package:flutter/material.dart';
 
-void showCustomSnackBar(BuildContext context, String message, int duration,
+void showCustomSnackBar(String message, int duration,
     [String? buttonText, VoidCallback? onButtonPressed]) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+  scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
     content: Row(
       children: [
         Expanded(child: Text(message)),
@@ -20,10 +20,10 @@ void showCustomSnackBar(BuildContext context, String message, int duration,
       ],
     ),
     behavior: SnackBarBehavior.floating,
-    margin: EdgeInsets.only(
+    margin: const EdgeInsets.only(
       bottom: 20, // Adjust to control height from bottom
-      left: MediaQuery.of(context).size.width * 0.05, // 5% margin on left
-      right: MediaQuery.of(context).size.width * 0.05, // 5% margin on right
+      left: 20, // 5% margin on left
+      right: 20, // 5% margin on right
     ),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(12), // Rounded corners

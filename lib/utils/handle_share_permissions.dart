@@ -23,7 +23,6 @@ Future<void> handleShare(context) async {
   if (deniedPermissions.isNotEmpty) {
     // Show the denied permissions to the user
     showCustomSnackBar(
-      context,
       "These permissions are required to share the deck: ${deniedPermissions.join(', ')}",
       2,
     );

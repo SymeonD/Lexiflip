@@ -112,18 +112,16 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                               onPayLoadRecieved: (endpointId, payload) {
                             // Handle received payload here
                             // For example, you can decode the payload and show it in a dialog
-                            showCustomSnackBar(context, "payload received", 2);
+                            showCustomSnackBar( "payload received", 2);
                           }, onPayloadTransferUpdate: (endpointId, update) {
                             // Handle progress or completion here
                             Logger()
                                 .i("Payload transfer update: ${update.status}");
                           });
-                          showCustomSnackBar(
-                              context, "connection initiated", 2);
+                          showCustomSnackBar("connection initiated", 2);
                         }, onConnectionResult: (id, status) async {
                           if (status == Status.CONNECTED) {
-                            showCustomSnackBar(
-                                context, "Connection successful", 2);
+                            showCustomSnackBar("Connection successful", 2);
 
                             // Create the payload
                             final deckload = {
@@ -151,16 +149,15 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                             final bytes = utf8.encode(jsonEncode(payload));
                             // Send the payload
                             Nearby().sendBytesPayload(id, bytes).then((_) {
-                              showCustomSnackBar(context, "Payload sent", 2);
+                              showCustomSnackBar( "Payload sent", 2);
                             }).catchError((error) {
-                              showCustomSnackBar(
-                                  context, "Failed to send payload: $error", 2);
+                              showCustomSnackBar("Failed to send payload: $error", 2);
                             });
                           } else {
-                            showCustomSnackBar(context, "Connection failed", 2);
+                            showCustomSnackBar( "Connection failed", 2);
                           }
                         }, onDisconnected: (id) {
-                          showCustomSnackBar(context, "Disconnected", 2);
+                          showCustomSnackBar( "Disconnected", 2);
                         });
                       } else if (value == "delete") {
                         // Delete the deck, show a confirmation dialog if more than 0 cards
@@ -298,9 +295,7 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                               languageDeck: widget.languageDeck,
                                               carMode: true,
                                             )))
-                                : showCustomSnackBar(
-                                    context,
-                                    "This deck is empty, add cards to it to play",
+                                : showCustomSnackBar("This deck is empty, add cards to it to play",
                                     2);
                           },
                           child:
@@ -340,7 +335,6 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                               languageDeck: widget.languageDeck,
                                             )))
                                 : showCustomSnackBar(
-                                    context,
                                     "This deck is empty, add cards to it to play",
                                     2);
                           },

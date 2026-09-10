@@ -83,7 +83,7 @@ class _LanguageCardViewState extends State<LanguageCardView> {
                       } else if (value == "share") {
                         // Share the deck
                         // Show a bar at the bottom of the screen with a text 'Coming soon'
-                        showCustomSnackBar(context, "Coming soon", 2);
+                        showCustomSnackBar( "Coming soon", 2);
                       } else if (value == "remove") {
                         // Remove the card from the deck
                         DatabaseHelper.instance.removeCardFromDeck(

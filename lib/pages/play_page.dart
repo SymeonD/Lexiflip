@@ -572,7 +572,7 @@ class _PlayPageState extends State<PlayPage> {
                     final currentVolume = await VolumeController.instance.getVolume();
                     if(currentVolume == 0.0) {
                      if(context.mounted) {
-                      showCustomSnackBar(context, "Volume is muted. Please increase the volume to hear the pronunciation.", 3);
+                      showCustomSnackBar( "Volume is muted. Please increase the volume to hear the pronunciation.", 3);
                      }
                     }
                     try {

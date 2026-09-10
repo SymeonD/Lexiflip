@@ -204,8 +204,7 @@ String getLanguageCode(String countryCode, BuildContext context) {
       ? countryToLanguageMap[countryCode.toUpperCase()]!.first
       : 'en';
   countryToLanguageMap[countryCode.toUpperCase()] == null
-      ? showCustomSnackBar(
-          context, "Language not supported, defaulted to english", 2)
+      ? showCustomSnackBar("Language not supported, defaulted to english", 2)
       : null;
   // Check if it exists in the supported languages
   TranslateLanguage.values.firstWhere((element) => element.bcpCode == value,
