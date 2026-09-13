@@ -21,11 +21,11 @@ import 'package:volume_controller/volume_controller.dart';
 class PlayPage extends StatefulWidget {
   const PlayPage(
       {super.key,
-      required this.languageDeck,
-      required this.language,
+      required this.countryDeck,
+      required this.country,
       this.carMode});
-  final LanguageDeck languageDeck;
-  final Language language;
+  final CountryDeck countryDeck;
+  final Country country;
   final bool? carMode;
 
   @override
@@ -33,7 +33,7 @@ class PlayPage extends StatefulWidget {
 }
 
 class _PlayPageState extends State<PlayPage> {
-  final List<LanguageCard?> cards = [];
+  final List<CountryCard?> cards = [];
   int cardsLength = 0;
 
   CardSwiperController swiperController = CardSwiperController();
@@ -58,8 +58,8 @@ class _PlayPageState extends State<PlayPage> {
   Future<bool> _loadCards() async {
     try {
       final db = DatabaseHelper.instance;
-      var cardList = await db.getCards(widget.languageDeck.languageDeckId!,
-          widget.language.languageId!, widget.languageDeck.isDefault!);
+      var cardList = await db.getCards(widget.countryDeck.countryDeckId!,
+          widget.country.countryId!, widget.countryDeck.isDefault!);
       setState(() {
         cards.addAll(cardList);
         cards.shuffle();
@@ -94,9 +94,9 @@ class _PlayPageState extends State<PlayPage> {
     final prefs = await SharedPreferences.getInstance();
     final languages = await cardTts.getLanguages;
 
-    final targetLocalCode = getLanguageCode(widget.language.languageCode);
+    final targetLocalCode = widget.country.countryLanguageCode;
     final nativeLangCode = prefs.getString("nativeLanguageCode") ?? 'en';
-    final targetNativeCode = "${getLanguageCode(nativeLangCode)}-${nativeLangCode.toUpperCase()}";
+    final targetNativeCode = "$nativeLangCode-${nativeLangCode.toUpperCase()}";
 
     for(final lang in languages) {
       final langStr = lang.toString();
@@ -236,13 +236,12 @@ class _PlayPageState extends State<PlayPage> {
         backgroundColor: ThemeColors.backgroundColor,
         elevation: 0,
         shape: Border(bottom: BorderSide(color: Colors.grey.shade300)),
-        // Get the language name from the language code
         title: Padding(
           padding: const EdgeInsets.only(bottom: 5, left: 8),
           child: Row(
             children: [
               CountryFlag.fromCountryCode(
-                widget.language.languageCode,
+                widget.country.countryCode,
                 width: 60,
                 height: 40,
                 shape: const RoundedRectangle(7),
@@ -254,7 +253,7 @@ class _PlayPageState extends State<PlayPage> {
                       150, // Adjust this based on layout
                 ),
                 child: Text(
-                  widget.languageDeck.languageDeckName,
+                  widget.countryDeck.countryDeckName,
                   overflow: TextOverflow.ellipsis, // Truncate with ellipsis
                   maxLines: 1, // Limit to one line
                   style: const TextStyle(
@@ -483,7 +482,7 @@ class _PlayPageState extends State<PlayPage> {
     );
   }
 
-  Widget _buildFront(LanguageCard? card) {
+  Widget _buildFront(CountryCard? card) {
     return SizedBox(
       width: double.infinity,
       height: 200, // Define the height of the container here
@@ -550,7 +549,7 @@ class _PlayPageState extends State<PlayPage> {
     );
   }
 
-  Widget _buildBack(LanguageCard? card) {
+  Widget _buildBack(CountryCard? card) {
     return SizedBox(
       width: double.infinity,
       height: 200, // Define the height of the container here

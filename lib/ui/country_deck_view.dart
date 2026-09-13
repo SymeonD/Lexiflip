@@ -14,22 +14,22 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 
-class LanguageDeckView extends StatefulWidget {
-  final Language language;
-  final LanguageDeck languageDeck;
+class CountryDeckView extends StatefulWidget {
+  final Country country;
+  final CountryDeck countryDeck;
   final VoidCallback onDelete;
 
-  const LanguageDeckView(
+  const CountryDeckView(
       {super.key,
-      required this.language,
-      required this.languageDeck,
+      required this.country,
+      required this.countryDeck,
       required this.onDelete});
 
   @override
-  State createState() => _LanguageDeckViewState();
+  State createState() => _CountryDeckViewState();
 }
 
-class _LanguageDeckViewState extends State<LanguageDeckView> {
+class _CountryDeckViewState extends State<CountryDeckView> {
   int _deckCardCount = 0;
   double scaleA = 1;
 
@@ -37,9 +37,9 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
   void _loadDeckCardCount() async {
     // Get the number of cards in the deck
     _deckCardCount = await DatabaseHelper.instance.getDeckCardCount(
-        widget.languageDeck.languageDeckId!,
-        widget.languageDeck.isDefault!,
-        widget.language.languageId!);
+        widget.countryDeck.countryDeckId!,
+        widget.countryDeck.isDefault!,
+        widget.country.countryId!);
     setState(() {});
   }
 
@@ -62,9 +62,9 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => LanguageCardPage(
-                    language: widget.language,
-                    languageDeck: widget.languageDeck,
+                builder: (context) => CountryCardPage(
+                    country: widget.country,
+                    countryDeck: widget.countryDeck,
                     onCardEdited: _loadDeckCardCount)));
       },
       child: SizedBox(
@@ -90,14 +90,14 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                       const Strategy strategy = Strategy.P2P_STAR;
 
                       // Handle menu selection
-                      if (value == "edit" && !widget.languageDeck.isDefault!) {
+                      if (value == "edit" && !widget.countryDeck.isDefault!) {
                         // Edit the deck
                         showDialog(
                             context: context,
                             builder: (BuildContext context) {
                               return DeckDialogView(
-                                language: widget.language,
-                                languageDeck: widget.languageDeck,
+                                country: widget.country,
+                                countryDeck: widget.countryDeck,
                                 onDelete: _loadDeckCardCount,
                               );
                             });
@@ -125,8 +125,8 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
 
                             // Create the payload
                             final deckload = {
-                              "deckName": widget.languageDeck.languageDeckName,
-                              "languageId": widget.language.languageId,
+                              "deckName": widget.countryDeck.countryDeckName,
+                              "countryId": widget.country.countryId,
                             };
                             final payload = {
                               "deck": deckload,
@@ -134,8 +134,8 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                             };
                             // Get the cards in the deck
                             final cards = await DatabaseHelper.instance
-                                .getCards(widget.languageDeck.languageDeckId!,
-                                    widget.languageDeck.languageId);
+                                .getCards(widget.countryDeck.countryDeckId!,
+                                    widget.country.countryId!);
                             // Add the cards to the payload
                             payload["cards"] = cards
                                 .map((card) => {
@@ -183,7 +183,7 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                     onPressed: () {
                                       // Delete the deck
                                       DatabaseHelper.instance.deleteDeck(
-                                          widget.languageDeck.languageDeckId!);
+                                          widget.countryDeck.countryDeckId!);
                                       widget.onDelete();
                                       Navigator.of(context).pop();
                                     },
@@ -198,7 +198,7 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                         } else {
                           // Delete the deck
                           DatabaseHelper.instance
-                              .deleteDeck(widget.languageDeck.languageDeckId!);
+                              .deleteDeck(widget.countryDeck.countryDeckId!);
                           widget.onDelete();
                         }
                         setState(() {
@@ -212,7 +212,7 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                     itemBuilder: (BuildContext context) => [
                       // Edit option
                       PopupMenuItem(
-                        enabled: !widget.languageDeck.isDefault!,
+                        enabled: !widget.countryDeck.isDefault!,
                         value: "edit",
                         height: 35,
                         padding: const EdgeInsets.only(left: 10),
@@ -232,7 +232,7 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                       ),
                       // Share option
                       PopupMenuItem(
-                        enabled: widget.languageDeck.languageDeckCards != null && widget.languageDeck.languageDeckCards!.isNotEmpty,
+                        enabled: widget.countryDeck.countryDeckCards != null && widget.countryDeck.countryDeckCards!.isNotEmpty,
                         value: "share",
                         height: 35,
                         child: const IntrinsicWidth(
@@ -291,8 +291,8 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) => PlayPage(
-                                              language: widget.language,
-                                              languageDeck: widget.languageDeck,
+                                              country: widget.country,
+                                              countryDeck: widget.countryDeck,
                                               carMode: true,
                                             )))
                                 : showCustomSnackBar("This deck is empty, add cards to it to play",
@@ -331,8 +331,8 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) => PlayPage(
-                                              language: widget.language,
-                                              languageDeck: widget.languageDeck,
+                                              country: widget.country,
+                                              countryDeck: widget.countryDeck,
                                             )))
                                 : showCustomSnackBar(
                                     "This deck is empty, add cards to it to play",
@@ -365,7 +365,7 @@ class _LanguageDeckViewState extends State<LanguageDeckView> {
               SizedBox(
                 width: 150,
                 child: Center(
-                  child: AutoSizeText(widget.languageDeck.languageDeckName,
+                  child: AutoSizeText(widget.countryDeck.countryDeckName,
                       maxLines: 1,
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold)),

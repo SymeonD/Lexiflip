@@ -1,7 +1,7 @@
 import 'package:cards/main.dart';
 import 'package:cards/pages/country_decks_page.dart';
 import 'package:cards/utils/country_to_language.dart';
-import 'package:cards/utils/manage_language_model.dart';
+import 'package:cards/utils/manage_country_model.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:canopas_country_picker/canopas_country_picker.dart';
@@ -23,16 +23,16 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  List<Language> languages = [];
-  String newLanguage = "";
+  List<Country> countries = [];
+  String newCountry = "";
   int columnCount = 2;
   int rowCount = 1;
 
   late AnimationController _controller;
   late Animation<double> _shakeAnimation;
-  String? shakingLanguageCode; // Track which language is shaking
+  String? shakingCountryCode; // Track which country is shaking
 
-  final languageModelManager = OnDeviceTranslatorModelManager();
+  final countryModelManager = OnDeviceTranslatorModelManager();
 
   late String nativeCountryCode;
 
@@ -42,43 +42,41 @@ class _HomePageState extends State<HomePage>
     connectivityResult.contains(ConnectivityResult.wifi) ||
             connectivityResult.contains(ConnectivityResult.mobile)
         ? SharedPreferences.getInstance().then((prefs) {
-            if (prefs.getBool("showLanguageDownloadPrompt") == null ||
-                prefs.getBool("showLanguageDownloadPrompt")!) {
-              // Get all the languages from the database
-              var allLanguages =
-                  languages.map((l) => l.languageCode).toSet().toList();
-              // Add the native country code to the list of added languages
-              allLanguages.add(nativeCountryCode);
-
+            if (prefs.getBool("showCountryDownloadPrompt") == null ||
+                prefs.getBool("showCountryDownloadPrompt")!) {
+                  
               // Get the corresponding language codes
-              allLanguages = allLanguages
-                  .map((lang) => getLanguageCode(lang))
+              var allCountries = countries
+                  .map((c) => c.countryLanguageCode)
+                  .toSet()
                   .toList();
 
-              var notDownloadedLanguages = [];
-              // Check if the languages are downloaded
-              for (var languageCode in allLanguages) {
-                languageModelManager
-                    .isModelDownloaded(languageCode)
+              allCountries.add(getLanguageCode(nativeCountryCode));
+
+              var notDownloadedCountries = [];
+              // Check if the countries are downloaded
+              for (var countryCode in allCountries) {
+                countryModelManager
+                    .isModelDownloaded(countryCode)
                     .then((value) => {
                           if (!value)
                             {
-                              notDownloadedLanguages.add(languageCode),
+                              notDownloadedCountries.add(countryCode),
                             }
                         });
               }
-              if (notDownloadedLanguages.isNotEmpty && context.mounted) {
+              if (notDownloadedCountries.isNotEmpty && context.mounted) {
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
-                    title: const Text("Language downloading"),
+                    title: const Text("Country downloading"),
                     content: Text(
-                        "Some languages you are using $notDownloadedLanguages are not downloaded yet, do you want to download them now ? When done, you will be able to use automatic translation."),
+                        "Some countries you are using $notDownloadedCountries are not downloaded yet, do you want to download them now ? When done, you will be able to use automatic translation."),
                     actions: [
                       TextButton(
                         onPressed: () =>
                             SharedPreferences.getInstance().then((prefs) {
-                          prefs.setBool("showLanguageDownloadPrompt", false);
+                          prefs.setBool("showCountryDownloadPrompt", false);
                           Navigator.pop(context);
                         }),
                         child: const Text("Never",
@@ -90,8 +88,8 @@ class _HomePageState extends State<HomePage>
                       ),
                       TextButton(
                         onPressed: () {
-                          for (var languageCode in notDownloadedLanguages) {
-                            languageModelManager.downloadModel(languageCode,
+                          for (var countryCode in notDownloadedCountries) {
+                            countryModelManager.downloadModel(countryCode,
                                 isWifiRequired: false);
                           }
                           Navigator.pop(context);
@@ -110,7 +108,7 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    _loadLanguages().then((value) => {
+    _loadCountries().then((value) => {
           checkNetworkAndPrompt(context),
         });
 
@@ -136,54 +134,54 @@ class _HomePageState extends State<HomePage>
       });
   }
 
-  Future<bool> _loadLanguages() async {
+  Future<bool> _loadCountries() async {
     try {
       final db = DatabaseHelper.instance;
-      var langList = await db.getLanguages();
+      var countryList = await db.getCountries();
       setState(() {
-        languages = langList;
-        columnCount = languages.length <= 5
+        countries = countryList;
+        columnCount = countries.length <= 5
             ? 2
-            : languages.length <= 11
+            : countries.length <= 11
                 ? 3
                 : 4;
-        rowCount = (languages.length / columnCount).ceil();
+        rowCount = (countries.length / columnCount).ceil();
       });
       return true;
     } catch (e) {
-      Logger().e("Error loading languages: $e");
+      Logger().e("Error loading countries: $e");
       return false;
     }
   }
 
-  void _triggerShake(String languageCode) {
-    setState(() => shakingLanguageCode = languageCode);
+  void _triggerShake(String countryCode) {
+    setState(() => shakingCountryCode = countryCode);
     _controller.forward(); // Start the shake animation
   }
 
   void _showDeleteDialog() async {
-    if (shakingLanguageCode == null) return;
+    if (shakingCountryCode == null) return;
 
-    Language lang =
-        languages.firstWhere((l) => l.languageCode == shakingLanguageCode);
+    Country country =
+        countries.firstWhere((c) => c.countryCode == shakingCountryCode);
 
-    // Get the cards corresponding to the language
+    // Get the cards corresponding to the country
     var cards = await DatabaseHelper.instance
-        .getCards(0, lang.languageId!, true); // 0 and true for all cards
+        .getCards(0, country.countryId!, true); // 0 and true for all cards
 
     if (cards.isEmpty) {
-      manageLanguageModel(getLanguageCode(lang.languageCode),
-          ManageLanguageModelAction.DELETE);
+      manageCountryModel(country.countryLanguageCode,
+          ManageCountryModelAction.DELETE);
       // Delete immediately if no cards exist
-      await DatabaseHelper.instance.deleteLanguage(lang.languageId!);
-      _loadLanguages();
+      await DatabaseHelper.instance.deleteCountry(country.countryId!);
+      _loadCountries();
     } else {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text("Delete ${lang.languageName}?"),
+          title: Text("Delete ${country.countryName}?"),
           content: const Text(
-              "This language has saved cards. Are you sure you want to delete it?"),
+              "This country has saved cards. Are you sure you want to delete it?"),
           actions: [
             TextButton(
                 onPressed: () => Navigator.pop(context, false),
@@ -198,14 +196,14 @@ class _HomePageState extends State<HomePage>
       ).then((value) => {
             if (value == true)
               {
-                manageLanguageModel(getLanguageCode(lang.languageCode),
-                    ManageLanguageModelAction.DELETE),
-                DatabaseHelper.instance.deleteLanguage(lang.languageId!),
-                _loadLanguages()
+                manageCountryModel(country.countryLanguageCode,
+                    ManageCountryModelAction.DELETE),
+                DatabaseHelper.instance.deleteCountry(country.countryId!),
+                _loadCountries()
               }
           });
     }
-    setState(() => shakingLanguageCode = null); // Reset the shaking effect
+    setState(() => shakingCountryCode = null); // Reset the shaking effect
   }
 
   @override
@@ -261,15 +259,15 @@ class _HomePageState extends State<HomePage>
                         mainAxisSpacing: 10,
                         childAspectRatio: 90 / 60,
                       ),
-                      itemCount: languages.length + 1,
+                      itemCount: countries.length + 1,
                       itemBuilder: (context, index) {
-                        if (index < languages.length) {
-                          var lang = languages[index];
+                        if (index < countries.length) {
+                          var country = countries[index];
                           return AnimatedBuilder(
                             animation: _controller,
                             builder: (context, child) {
                               return Transform.translate(
-                                offset: shakingLanguageCode == lang.languageCode
+                                offset: shakingCountryCode == country.countryCode
                                     ? Offset(_shakeAnimation.value, 0)
                                     : const Offset(0, 0),
                                 child: ElevatedButton(
@@ -278,15 +276,14 @@ class _HomePageState extends State<HomePage>
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) =>
-                                            LanguageDecksPage(language: lang),
+                                            CountryDecksPage(country: country),
                                       ),
                                     );
                                   },
                                   onLongPress: () async => {
-                                    _triggerShake(lang.languageCode),
-                                    await languageModelManager
-                                        .isModelDownloaded(getLanguageCode(
-                                            lang.languageCode))
+                                    _triggerShake(country.countryCode),
+                                    await countryModelManager
+                                        .isModelDownloaded(country.countryLanguageCode)
                                         .then((isModelDownloaded) => showMenu(
                                               context: context,
                                               position: _getPosition(context),
@@ -349,10 +346,9 @@ class _HomePageState extends State<HomePage>
                                         .then((menuChoice) {
                                       if (menuChoice != null) {
                                         menuChoice == "download"
-                                            ? manageLanguageModel(
-                                                getLanguageCode(
-                                                    lang.languageCode),
-                                                ManageLanguageModelAction
+                                            ? manageCountryModel(
+                                                country.countryLanguageCode,
+                                                ManageCountryModelAction
                                                     .DOWNLOAD)
                                             : _showDeleteDialog();
                                       }
@@ -366,7 +362,7 @@ class _HomePageState extends State<HomePage>
                                     ),
                                   ),
                                   child: CountryFlag.fromCountryCode(
-                                    lang.languageCode,
+                                    country.countryCode,
                                     height: 60,
                                     width: 90,
                                     shape: const RoundedRectangle(10),
@@ -378,21 +374,23 @@ class _HomePageState extends State<HomePage>
                         } else {
                           return ElevatedButton(
                             onPressed: () async {
-                              final newLang = await showPickerDialog(context);
-                              if (newLang != null) {
-                                setState(() => newLanguage = newLang.name);
+                              final newCount = await showPickerDialog(context);
+                              if (newCount != null) {
+                                setState(() => newCountry = newCount.name);
+                                final newCountLangCode = getLanguageCode(newCount.code);
                                 try {
                                   await DatabaseHelper.instance
-                                      .insertLanguage(Language(
-                                    languageCode: newLang.code,
-                                    languageName: newLang.name,
+                                      .insertCountry(Country(
+                                    countryCode: newCount.code,
+                                    countryName: newCount.name,
+                                    countryLanguageCode: newCountLangCode,
                                   ));
-                                  manageLanguageModel(
-                                      getLanguageCode(newLang.code),
-                                      ManageLanguageModelAction.DOWNLOAD);
-                                  _loadLanguages();
+                                  manageCountryModel(
+                                      newCountLangCode,
+                                      ManageCountryModelAction.DOWNLOAD);
+                                  _loadCountries();
                                 } catch (e) {
-                                  Logger().e("Error inserting language: $e");
+                                  Logger().e("Error inserting country: $e");
                                 }
                               }
                             },
@@ -457,14 +455,14 @@ class _HomePageState extends State<HomePage>
   }
 
   Future<CountryCode?> showPickerDialog(BuildContext context) async {
-    // Add native country code to the list of added languages
-    final addedLanguages = languages.map((lang) => lang.languageCode).toSet();
-    addedLanguages.add(nativeCountryCode);
+    // Add native country code to the list of added countries
+    final addedCountries = countries.map((country) => country.countryCode).toSet();
+    addedCountries.add(nativeCountryCode);
     return await showCountryCodePickerDialog(
       context: context,
       customizationBuilders: CustomizationBuilders(
         codeBuilder: (CountryCode code) {
-          if (addedLanguages.contains(code.code)) {
+          if (addedCountries.contains(code.code)) {
             return const SizedBox();
           }
           return DefaultCountryCodeListItemView(
@@ -473,7 +471,7 @@ class _HomePageState extends State<HomePage>
         },
         countryListBuilder: (codes, controller) {
           final filteredCodes = codes
-              .where((code) => !addedLanguages.contains(code.code))
+              .where((code) => !addedCountries.contains(code.code))
               .toList();
           return CountryCodeListView(
               codes: filteredCodes, controller: controller);

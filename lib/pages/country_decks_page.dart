@@ -16,23 +16,23 @@ import 'package:logger/logger.dart';
 import 'package:logger/web.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 
-class LanguageDecksPage extends StatefulWidget {
-  final Language language;
-  const LanguageDecksPage({super.key, required this.language});
+class CountryDecksPage extends StatefulWidget {
+  final Country country;
+  const CountryDecksPage({super.key, required this.country});
 
   @override
-  State createState() => _LanguageDecksPageState();
+  State createState() => _CountryDecksPageState();
 }
 
-class _LanguageDecksPageState extends State<LanguageDecksPage> {
-  List<LanguageDeck> decks = [];
-  List<LanguageDeck> filteredDecks = [];
+class _CountryDecksPageState extends State<CountryDecksPage> {
+  List<CountryDeck> decks = [];
+  List<CountryDeck> filteredDecks = [];
   final searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadLanguageDecks();
+    _loadCountryDecks();
   }
 
   @override
@@ -47,7 +47,7 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
         filteredDecks = decks;
       } else {
         filteredDecks = decks
-            .where((deck) => deck.languageDeckName
+            .where((deck) => deck.countryDeckName
                 .toLowerCase()
                 .contains(filterText.toLowerCase()))
             .toList();
@@ -55,16 +55,16 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
     });
   }
 
-  // Load all the language decks for the given language code
-  Future<void> _loadLanguageDecks() async {
+  // Load all the country decks for the given country code
+  Future<void> _loadCountryDecks() async {
     try {
       final db = DatabaseHelper.instance;
-      var deckList = await db.getDecks(widget.language.languageId!);
+      var deckList = await db.getDecks(widget.country.countryId!);
       // If there is no decks, create a new one
       if (deckList.isEmpty) {
-        await db.insertDeck(widget.language.languageId!, 'All cards',
+        await db.insertDeck(widget.country.countryId!, 'All cards',
             true); // True because default deck
-        deckList = await db.getDecks(widget.language.languageId!);
+        deckList = await db.getDecks(widget.country.countryId!);
       }
       setState(() {
         decks = deckList;
@@ -86,13 +86,12 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
         backgroundColor: ThemeColors.backgroundColor,
         elevation: 0,
         shape: Border(bottom: BorderSide(color: Colors.grey.shade300)),
-        // Get the language name from the language code
         title: Padding(
           padding: const EdgeInsets.only(bottom: 5, left: 8),
           child: Row(
             children: [
               CountryFlag.fromCountryCode(
-                widget.language.languageCode,
+                widget.country.countryCode,
                 width: 60,
                 height: 40,
                 shape: const RoundedRectangle(7),
@@ -104,7 +103,7 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
                       150, // Adjust this based on layout
                 ),
                 child: Text(
-                  widget.language.languageName,
+                  widget.country.countryName,
                   overflow: TextOverflow.ellipsis, // Truncate with ellipsis
                   maxLines: 1, // Limit to one line
                   style: const TextStyle(
@@ -119,7 +118,7 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
         ),
       ),
       body:
-          // Create a list view of the language decks
+          // Create a list view of the country decks
           Column(children: [
         Padding(
           padding: const EdgeInsets.only(left: 12, right: 12, top: 12),
@@ -140,10 +139,10 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
               itemCount: filteredDecks.length + 1,
               itemBuilder: (context, index) {
                 if (index < filteredDecks.length) {
-                  return LanguageDeckView(
-                    language: widget.language,
-                    languageDeck: filteredDecks[index],
-                    onDelete: _loadLanguageDecks,
+                  return CountryDeckView(
+                    country: widget.country,
+                    countryDeck: filteredDecks[index],
+                    onDelete: _loadCountryDecks,
                   );
                 } else {
                   return InkWell(
@@ -153,8 +152,8 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
                           context: context,
                           builder: (BuildContext context) {
                             return DeckDialogView(
-                              language: widget.language,
-                              onDelete: _loadLanguageDecks,
+                              country: widget.country,
+                              onDelete: _loadCountryDecks,
                             );
                           });
                     },
@@ -210,21 +209,21 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
                                             final jsonData = jsonDecode(data);
                                             final deckName =
                                                 jsonData["deck"]["deckName"];
-                                            final languageId =
-                                                jsonData["deck"]["languageId"];
+                                            final countryId =
+                                                jsonData["deck"]["countryId"];
                                             // Add the deck to the database
                                             await DatabaseHelper.instance
                                                 .insertDeck(
-                                                    languageId, deckName)
+                                                    countryId, deckName)
                                                 .then((deckId) => {
                                                       jsonData["cards"]
                                                           .forEach((card) {
                                                         Logger()
                                                             .i("Card: $card");
                                                         DatabaseHelper.instance
-                                                            .insertCard(LanguageCard(
-                                                                languageId:
-                                                                    languageId,
+                                                            .insertCard(CountryCard(
+                                                                countryId:
+                                                                    countryId,
                                                                 nativeText: card[
                                                                     "nativeText"],
                                                                 nativeNote: card[
@@ -245,7 +244,7 @@ class _LanguageDecksPageState extends State<LanguageDecksPage> {
                                                     });
 
                                             // Reload the page
-                                            _loadLanguageDecks();
+                                            _loadCountryDecks();
 
                                             showCustomSnackBar(
                                                 "Payload received: ${payload.toString()}",

@@ -10,23 +10,23 @@ import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
-class LanguageCardPage extends StatefulWidget {
-  final Language language;
-  final LanguageDeck languageDeck;
+class CountryCardPage extends StatefulWidget {
+  final Country country;
+  final CountryDeck countryDeck;
   final VoidCallback onCardEdited;
-  const LanguageCardPage(
+  const CountryCardPage(
       {super.key,
-      required this.language,
-      required this.languageDeck,
+      required this.country,
+      required this.countryDeck,
       required this.onCardEdited});
 
   @override
-  State createState() => _LanguageCardPageState();
+  State createState() => _CountryCardPageState();
 }
 
-class _LanguageCardPageState extends State<LanguageCardPage> {
-  List<LanguageCard?> cards = [];
-  List<LanguageCard?> filteredCards = [];
+class _CountryCardPageState extends State<CountryCardPage> {
+  List<CountryCard?> cards = [];
+  List<CountryCard?> filteredCards = [];
 
   final searchController = TextEditingController();
 
@@ -61,8 +61,8 @@ class _LanguageCardPageState extends State<LanguageCardPage> {
   Future<void> _loadDeckCards() async {
     try {
       final db = DatabaseHelper.instance;
-      var cardList = await db.getCards(widget.languageDeck.languageDeckId!,
-          widget.language.languageId!, widget.languageDeck.isDefault!);
+      var cardList = await db.getCards(widget.countryDeck.countryDeckId!,
+          widget.country.countryId!, widget.countryDeck.isDefault!);
       setState(() {
         cards = cardList;
         _filter(searchController.text);
@@ -80,13 +80,12 @@ class _LanguageCardPageState extends State<LanguageCardPage> {
         backgroundColor: ThemeColors.backgroundColor,
         elevation: 0,
         shape: Border(bottom: BorderSide(color: Colors.grey.shade300)),
-        // Get the language name from the language code
         title: Padding(
           padding: const EdgeInsets.only(bottom: 5, left: 8),
           child: Row(
             children: [
               CountryFlag.fromCountryCode(
-                widget.language.languageCode,
+                widget.country.countryCode,
                 width: 60,
                 height: 40,
                 shape: const RoundedRectangle(7),
@@ -98,7 +97,7 @@ class _LanguageCardPageState extends State<LanguageCardPage> {
                       150, // Adjust this based on layout
                 ),
                 child: Text(
-                  widget.languageDeck.languageDeckName,
+                  widget.countryDeck.countryDeckName,
                   overflow: TextOverflow.ellipsis, // Truncate with ellipsis
                   maxLines: 1, // Limit to one line
                   style: const TextStyle(
@@ -113,7 +112,7 @@ class _LanguageCardPageState extends State<LanguageCardPage> {
         ),
       ),
       body:
-          // Create a list view of the language decks
+          // Create a list view of the country decks
           Column(
         children: [
           Padding(
@@ -135,10 +134,10 @@ class _LanguageCardPageState extends State<LanguageCardPage> {
                 itemCount: filteredCards.length + 1,
                 itemBuilder: (context, index) {
                   if (index < filteredCards.length) {
-                    return LanguageCardView(
-                      language: widget.language,
-                      languageCard: filteredCards[index]!,
-                      languageDeck: widget.languageDeck,
+                    return CountryCardView(
+                      country: widget.country,
+                      countryCard: filteredCards[index]!,
+                      countryDeck: widget.countryDeck,
                       onDelete: _loadDeckCards,
                     );
                   } else {
@@ -149,8 +148,8 @@ class _LanguageCardPageState extends State<LanguageCardPage> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => CardDialogView(
-                                    language: widget.language,
-                                    languageDeck: widget.languageDeck,
+                                    country: widget.country,
+                                    countryDeck: widget.countryDeck ,
                                     onCardAdded: _loadDeckCards,
                                     cardTag: "default")));
                       },

@@ -4,7 +4,6 @@ import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/country.dart';
 import 'package:cards/models/country_card.dart';
 import 'package:cards/models/country_deck.dart';
-import 'package:cards/utils/country_to_language.dart';
 import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
@@ -14,22 +13,22 @@ import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CardDialogView extends StatefulWidget {
-  final Language language;
-  final LanguageDeck languageDeck;
+  final Country country;
+  final CountryDeck countryDeck;
   final VoidCallback onCardAdded;
 
   // Edit parameters
-  final LanguageCard? languageCard;
+  final CountryCard? countryCard;
 
   // Test hero
   final String cardTag;
 
   const CardDialogView(
       {super.key,
-      required this.language,
-      required this.languageDeck,
+      required this.country,
+      required this.countryDeck,
       required this.onCardAdded,
-      this.languageCard,
+      this.countryCard,
       required this.cardTag});
 
   @override
@@ -46,7 +45,7 @@ class _CardDialogViewState extends State<CardDialogView> {
 
   String nativeLanguage = "fr";
   String localLanguage = "en";
-  final languageModel = OnDeviceTranslatorModelManager();
+  final countryModel = OnDeviceTranslatorModelManager();
   bool isModelDownloaded = false;
 
   bool isButtonEnabled = false;
@@ -65,28 +64,28 @@ class _CardDialogViewState extends State<CardDialogView> {
   @override
   void initState() {
     // Initiate the controllers with the text entered by the user
-    if (widget.languageCard != null) {
-      nativeTextController.text = widget.languageCard!.nativeText;
-      nativeNoteController.text = widget.languageCard!.nativeNote ?? "";
-      localTextController.text = widget.languageCard!.localText;
+    if (widget.countryCard != null) {
+      nativeTextController.text = widget.countryCard!.nativeText;
+      nativeNoteController.text = widget.countryCard!.nativeNote ?? "";
+      localTextController.text = widget.countryCard!.localText;
       localRomanizationController.text =
-          widget.languageCard!.localRomanization ?? "";
+          widget.countryCard!.localRomanization ?? "";
     }
     SharedPreferences.getInstance().then((prefs) {
       nativeLanguage = prefs.getString('nativeLanguageCode') ?? "fr";
     });
-    localLanguage = getLanguageCode(widget.language.languageCode);
+    localLanguage = widget.country.countryLanguageCode;
 
-    languageModel.isModelDownloaded(localLanguage).then((value) => {
+    countryModel.isModelDownloaded(localLanguage).then((value) => {
           setState(() {
             isModelDownloaded = value;
           })
         });
 
-    languageModel.isModelDownloaded(localLanguage).then(
+    countryModel.isModelDownloaded(localLanguage).then(
         (value) => {Logger().d("Model $localLanguage downloaded: $value")});
 
-    languageModel.isModelDownloaded(nativeLanguage).then(
+    countryModel.isModelDownloaded(nativeLanguage).then(
         (value) => {Logger().d("Model $nativeLanguage downloaded: $value")});
 
     nativeTextController.addListener(() {
@@ -129,13 +128,12 @@ class _CardDialogViewState extends State<CardDialogView> {
             backgroundColor: ThemeColors.backgroundColor,
             elevation: 0,
             shape: Border(bottom: BorderSide(color: Colors.grey.shade300)),
-            // Get the language name from the language code
             title: Padding(
               padding: const EdgeInsets.only(bottom: 5, left: 8),
               child: Row(
                 children: [
                   CountryFlag.fromCountryCode(
-                    widget.language.languageCode,
+                    widget.country.countryCode,
                     width: 60,
                     height: 40,
                     shape: const RoundedRectangle(7),
@@ -147,7 +145,7 @@ class _CardDialogViewState extends State<CardDialogView> {
                           150, // Adjust this based on layout
                     ),
                     child: Text(
-                      widget.languageDeck.languageDeckName,
+                      widget.countryDeck.countryDeckName,
                       overflow: TextOverflow.ellipsis, // Truncate with ellipsis
                       maxLines: 1, // Limit to one line
                       style: const TextStyle(
@@ -456,13 +454,12 @@ class _CardDialogViewState extends State<CardDialogView> {
                         color: ThemeColors.primaryColor,
                         onPressed: isButtonEnabled
                             ? () {
-                                if (widget.languageCard == null) {
+                                if (widget.countryCard == null) {
                                   // Add the card into the database
                                   DatabaseHelper.instance
                                       .insertCard(
-                                        LanguageCard(
-                                          languageId:
-                                              widget.language.languageId!,
+                                        CountryCard(
+                                          countryId: widget.country.countryId!,
                                           nativeText: nativeTextController.text,
                                           nativeNote: nativeNoteController.text,
                                           localText: localTextController.text,
@@ -472,32 +469,33 @@ class _CardDialogViewState extends State<CardDialogView> {
                                       )
                                       .then((newCardId) => {
                                             if (!widget
-                                                    .languageDeck.isDefault! &&
-                                                newCardId != -1)
-                                              {
-                                                DatabaseHelper.instance
-                                                    .addCardToDeck(
-                                                        widget.languageDeck
-                                                            .languageDeckId!,
-                                                        newCardId)
-                                                    .then((value) => {}),
-                                              }
-                                          });
+                                                     .countryDeck.isDefault! &&
+                                                 newCardId != -1)
+                                               {
+                                                 DatabaseHelper.instance
+                                                     .addCardToDeck(
+                                                         widget.countryDeck
+                                                             .countryDeckId!,
+                                                         newCardId)
+                                                     .then((value) => {}),
+                                               }
+                                           });
                                   // If the deck is not 'all cards', add the card to the deck
                                 } else {
                                   // Edit the card
                                   DatabaseHelper.instance.updateCard(
-                                    LanguageCard(
-                                      languageId:
-                                          widget.languageCard!.languageId,
-                                      languageCardId:
-                                          widget.languageCard!.languageCardId,
+                                    CountryCard(
+                                      countryId:
+                                          widget.countryCard!.countryId,
+                                      countryCardId:
+                                          widget.countryCard!.countryCardId,
                                       nativeText: nativeTextController.text,
                                       nativeNote: nativeNoteController.text,
                                       localText: localTextController.text,
                                       localRomanization:
                                           localRomanizationController.text,
                                     ),
+    
                                   );
                                 }
                                 Navigator.of(context).pop();

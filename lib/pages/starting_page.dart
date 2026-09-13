@@ -3,7 +3,7 @@ import 'package:cards/main.dart';
 import 'package:cards/pages/home_page.dart';
 import 'package:cards/ui/country_code_list_view.dart';
 import 'package:cards/utils/country_to_language.dart';
-import 'package:cards/utils/manage_language_model.dart';
+import 'package:cards/utils/manage_country_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
@@ -21,7 +21,7 @@ class _StartingPageState extends State<StartingPage> {
   bool selected = false;
   late TextEditingController textEditingController;
 
-  final languageModel = OnDeviceTranslatorModelManager();
+  final countryModel = OnDeviceTranslatorModelManager();
 
   @override
   void initState() {
@@ -40,7 +40,7 @@ class _StartingPageState extends State<StartingPage> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const Text(""), // ("Choose your language"),
+        title: const Text(""),
       ),
       body: Stack(children: [
         Center(
@@ -104,16 +104,16 @@ class _StartingPageState extends State<StartingPage> {
                 IconButton(
                         onPressed: countryCode != null
                               ? () async {
+                              final countryLanguageCode = getLanguageCode(countryCode!.code);
                                   SharedPreferences.getInstance().then((prefs) async {
                               prefs.setString(
                                   "nativeCountryCode", countryCode!.code);
-                              //TODO: Snackbar error when getLanguageCode returns 'en' because unknown
                               prefs.setString("nativeLanguageCode",
-                                  getLanguageCode(countryCode!.code));
+                                  countryLanguageCode);
                             });
-                            manageLanguageModel(
-                                getLanguageCode(countryCode!.code),
-                                ManageLanguageModelAction.DOWNLOAD);
+                            manageCountryModel(
+                                countryLanguageCode,
+                                ManageCountryModelAction.DOWNLOAD);
                       context.mounted
                         ? Navigator.pushReplacement(
                             context,

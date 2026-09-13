@@ -8,15 +8,15 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
 class DeckDialogView extends StatefulWidget {
-  final Language language;
+  final Country country;
   // For editing an existing deck
-  final LanguageDeck? languageDeck;
+  final CountryDeck? countryDeck;
   // Callback to reload the decks
   final VoidCallback onDelete;
   const DeckDialogView(
       {super.key,
-      required this.language,
-      this.languageDeck,
+      required this.country,
+      this.countryDeck,
       required this.onDelete});
 
   @override
@@ -29,17 +29,17 @@ class _DeckDialogViewState extends State<DeckDialogView> {
   late ScrollController scrollController;
   bool _isButtonEnabled = false;
 
-  List<LanguageCardSelection> cardsWithSelection = [];
-  List<LanguageCardSelection> filteredCards = [];
-  List<LanguageCard?> deckCards = [];
+  List<CountryCardSelection> cardsWithSelection = [];
+  List<CountryCardSelection> filteredCards = [];
+  List<CountryCard?> deckCards = [];
 
   @override
   void initState() {
     deckNameController = TextEditingController();
     searchController = TextEditingController();
     scrollController = ScrollController();
-    if (widget.languageDeck != null) {
-      deckNameController.text = widget.languageDeck!.languageDeckName;
+    if (widget.countryDeck != null) {
+      deckNameController.text = widget.countryDeck!.countryDeckName;
     }
     deckNameController.addListener(() {
       setState(() {
@@ -60,24 +60,24 @@ class _DeckDialogViewState extends State<DeckDialogView> {
     super.dispose();
   }
 
-  // Load all cards linked to the language
+  // Load all cards linked to the country
   Future<void> _loadCards() async {
     try {
       final db = DatabaseHelper.instance;
       var cardList = await db.getCards(
-          0, widget.language.languageId!, true); // Get all cards (default deck)
-      if (widget.languageDeck != null && !widget.languageDeck!.isDefault!) {
+          0, widget.country.countryId!, true); // Get all cards (default deck)
+      if (widget.countryDeck != null && !widget.countryDeck!.isDefault!) {
         // Get all the cards linked to the deck
         deckCards = await db.getCards(
-            widget.languageDeck!.languageDeckId!, widget.language.languageId!);
+            widget.countryDeck!.countryDeckId!, widget.country.countryId!);
         setState(() {
           cardsWithSelection = cardList
-              .map((card) => LanguageCardSelection(
+              .map((card) => CountryCardSelection(
                   card: card,
                   isSelected: deckCards
-                      .whereType<LanguageCard>()
-                      .map((card) => card.languageCardId)
-                      .contains(card?.languageCardId)))
+                      .whereType<CountryCard>()
+                      .map((card) => card.countryCardId)
+                      .contains(card?.countryCardId)))
               .toList();
           _filter(searchController.text);
         });
@@ -85,13 +85,13 @@ class _DeckDialogViewState extends State<DeckDialogView> {
         setState(() {
           cardsWithSelection = cardList
               .map((card) =>
-                  LanguageCardSelection(card: card, isSelected: false))
+                  CountryCardSelection(card: card, isSelected: false))
               .toList();
           _filter(searchController.text);
         });
       }
     } catch (e) {
-      Logger().e("Error loading languages: $e");
+      Logger().e("Error loading countries: $e");
     }
   }
 
@@ -127,8 +127,8 @@ class _DeckDialogViewState extends State<DeckDialogView> {
             const SizedBox(height: 10),
             SearchBarView(
               searchController: deckNameController,
-              hintText: widget.languageDeck != null
-                  ? widget.languageDeck!.languageDeckName
+              hintText: widget.countryDeck != null
+                  ? widget.countryDeck!.countryDeckName
                   : 'What is this deck about ?',
               icon: Icons.book_outlined,
               inputMaxLength: 20,
@@ -138,7 +138,7 @@ class _DeckDialogViewState extends State<DeckDialogView> {
             const SizedBox(height: 20),
             SearchBarView(
                 searchController: searchController,
-                hintText: widget.languageDeck != null
+                hintText: widget.countryDeck != null
                     ? 'Search Card Name'
                     : 'Add existing cards',
                 onChanged: _filter),
@@ -200,38 +200,38 @@ class _DeckDialogViewState extends State<DeckDialogView> {
                   color: ThemeColors.primaryColor,
                   onPressed: _isButtonEnabled
                       ? () async {
-                          if (widget.languageDeck != null) {
+                          if (widget.countryDeck != null) {
                             await DatabaseHelper.instance.updateDeckName(
-                                widget.languageDeck!.languageDeckId!,
+                                widget.countryDeck!.countryDeckId!,
                                 deckNameController.text);
 
                             for (var card in filteredCards) {
                               bool wasSelected = deckCards
-                                  .whereType<LanguageCard>()
-                                  .map((c) => c.languageCardId)
-                                  .contains(card.card!.languageCardId);
+                                  .whereType<CountryCard>()
+                                  .map((c) => c.countryCardId)
+                                  .contains(card.card!.countryCardId);
 
                               if (card.isSelected != wasSelected) {
                                 if (card.isSelected) {
                                   await DatabaseHelper.instance.addCardToDeck(
-                                      widget.languageDeck!.languageDeckId!,
-                                      card.card!.languageCardId!);
+                                      widget.countryDeck!.countryDeckId!,
+                                      card.card!.countryCardId!);
                                 } else {
                                   await DatabaseHelper.instance
                                       .removeCardFromDeck(
-                                          widget.languageDeck!.languageDeckId!,
-                                          card.card!.languageCardId!);
+                                          widget.countryDeck!.countryDeckId!,
+                                          card.card!.countryCardId!);
                                 }
                               }
                             }
                           } else {
                             int newDeckId = await DatabaseHelper.instance
-                                .insertDeck(widget.language.languageId!,
+                                .insertDeck(widget.country.countryId!,
                                     deckNameController.text);
                             for (var card
                                 in filteredCards.where((c) => c.isSelected)) {
                               await DatabaseHelper.instance.addCardToDeck(
-                                  newDeckId, card.card!.languageCardId!);
+                                  newDeckId, card.card!.countryCardId!);
                             }
                           }
                           if (context.mounted) Navigator.pop(context);
@@ -252,9 +252,9 @@ class _DeckDialogViewState extends State<DeckDialogView> {
   }
 }
 
-class LanguageCardSelection {
-  LanguageCard? card;
+class CountryCardSelection {
+  CountryCard? card;
   bool isSelected;
 
-  LanguageCardSelection({required this.card, this.isSelected = false});
+  CountryCardSelection({required this.card, this.isSelected = false});
 }

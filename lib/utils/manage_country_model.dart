@@ -8,10 +8,10 @@ import 'package:flutter/services.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
 
 // ignore: constant_identifier_names
-enum ManageLanguageModelAction { DOWNLOAD, DELETE }
+enum ManageCountryModelAction { DOWNLOAD, DELETE }
 
-void manageLanguageModel(
-    String languageCode, ManageLanguageModelAction action) async {
+void manageCountryModel(
+    String countryCode, ManageCountryModelAction action) async {
   final receivePort = ReceivePort();
   final rootIsolateToken = RootIsolateToken.instance!;
 
@@ -22,9 +22,9 @@ void manageLanguageModel(
     scaffoldMessengerKey.currentState?.clearSnackBars();
     // Show "Download Complete" for 500ms
     showCustomSnackBar(
-      ManageLanguageModelAction.DOWNLOAD == action
-          ? "Language downloaded ✅"
-          : "Language deleted ✅",
+      ManageCountryModelAction.DOWNLOAD == action
+          ? "Country downloaded ✅"
+          : "Country deleted ✅",
       1,
     );
     receivePort.close(); // Close the receive port after receiving the message
@@ -32,20 +32,20 @@ void manageLanguageModel(
   });
 
   switch (action) {
-    case ManageLanguageModelAction.DOWNLOAD:
-      showPersistentSnackbar("Downloading $languageCode language...");
-      isolate = await Isolate.spawn(downloadLanguageModel, {
+    case ManageCountryModelAction.DOWNLOAD:
+      showPersistentSnackbar("Downloading $countryCode country...");
+      isolate = await Isolate.spawn(downloadCountryModel, {
         'sendPort': receivePort.sendPort,
-        'languageCode': languageCode,
+        'countryCode': countryCode,
         'rootIsolateToken': rootIsolateToken,
       });
       break;
 
-    case ManageLanguageModelAction.DELETE:
-      showPersistentSnackbar("Deleting $languageCode language...");
-      isolate = await Isolate.spawn(deleteLanguageModel, {
+    case ManageCountryModelAction.DELETE:
+      showPersistentSnackbar("Deleting $countryCode country...");
+      isolate = await Isolate.spawn(deleteCountryModel, {
         'sendPort': receivePort.sendPort,
-        'languageCode': languageCode,
+        'countryCode': countryCode,
         'rootIsolateToken': rootIsolateToken,
       });
       break;
@@ -74,17 +74,17 @@ void showPersistentSnackbar(String message) {
   ));
 }
 
-void downloadLanguageModel(Map<String, dynamic> args) async {
+void downloadCountryModel(Map<String, dynamic> args) async {
   SendPort sendPort = args['sendPort'];
-  String languageCode = args['languageCode'];
+  String countryCode = args['countryCode'];
   RootIsolateToken rootIsolateToken = args['rootIsolateToken'];
 
   try {
     BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
-    final languageModelManager = OnDeviceTranslatorModelManager();
-    await languageModelManager.downloadModel(languageCode,
+    final countryModelManager = OnDeviceTranslatorModelManager();
+    await countryModelManager.downloadModel(countryCode,
         isWifiRequired: false);
-    sendPort.send("Download Completed for $languageCode");
+    sendPort.send("Download Completed for $countryCode");
   } catch (e) {
     sendPort.send("Download Failed: $e");
   } finally {
@@ -92,16 +92,16 @@ void downloadLanguageModel(Map<String, dynamic> args) async {
   }
 }
 
-Future<void> deleteLanguageModel(Map<String, dynamic> args) async {
+Future<void> deleteCountryModel(Map<String, dynamic> args) async {
   SendPort sendPort = args['sendPort'];
-  String languageCode = args['languageCode'];
+  String countryCode = args['countryCode'];
   RootIsolateToken rootIsolateToken = args['rootIsolateToken'];
 
   try {
     BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
-    final languageModelManager = OnDeviceTranslatorModelManager();
-    await languageModelManager.deleteModel(languageCode);
-    sendPort.send("Deletion Completed for $languageCode");
+    final countryModelManager = OnDeviceTranslatorModelManager();
+    await countryModelManager.deleteModel(countryCode);
+    sendPort.send("Deletion Completed for $countryCode");
   } catch (e) {
     sendPort.send("Deletion Failed: $e");
   } finally {

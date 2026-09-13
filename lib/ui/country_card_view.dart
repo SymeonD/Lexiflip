@@ -2,37 +2,35 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/country.dart';
-// import 'package:cards/models/language.dart';
 import 'package:cards/models/country_card.dart';
 import 'package:cards/models/country_deck.dart';
 import 'package:cards/ui/card_dialog_view.dart';
 import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:flutter/material.dart';
 
-class LanguageCardView extends StatefulWidget {
-  // final Language language;
-  final LanguageCard languageCard;
-  final Language language;
+class CountryCardView extends StatefulWidget {
+  final CountryCard countryCard;
+  final Country country;
 
   // OnDelete
   final VoidCallback onDelete;
 
   // Edit
-  final LanguageDeck languageDeck;
+  final CountryDeck countryDeck;
 
-  const LanguageCardView(
+  const CountryCardView(
       {super.key,
-      // required this.language,
-      required this.languageCard,
+      // required this.country,
+      required this.countryCard,
       required this.onDelete,
-      required this.languageDeck,
-      required this.language});
+      required this.countryDeck,
+      required this.country});
 
   @override
-  State createState() => _LanguageCardViewState();
+  State createState() => _CountryCardViewState();
 }
 
-class _LanguageCardViewState extends State<LanguageCardView> {
+class _CountryCardViewState extends State<CountryCardView> {
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -40,16 +38,16 @@ class _LanguageCardViewState extends State<LanguageCardView> {
       onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (context) {
           return CardDialogView(
-            language: widget.language,
-            languageCard: widget.languageCard,
+            country: widget.country,
+            countryCard: widget.countryCard,
             onCardAdded: widget.onDelete,
-            languageDeck: widget.languageDeck,
-            cardTag: widget.languageCard.languageCardId.toString(),
+            countryDeck: widget.countryDeck,
+            cardTag: widget.countryCard.countryCardId.toString(),
           );
         }));
       },
       child: Hero(
-        tag: widget.languageCard.languageCardId.toString(),
+        tag: widget.countryCard.countryCardId.toString(),
         child: SizedBox(
           width: 200,
           height: 150, // Define the height of the container here
@@ -72,12 +70,12 @@ class _LanguageCardViewState extends State<LanguageCardView> {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) {
                           return CardDialogView(
-                            language: widget.language,
-                            languageCard: widget.languageCard,
+                            country: widget.country,
+                            countryCard: widget.countryCard,
                             onCardAdded: widget.onDelete,
-                            languageDeck: widget.languageDeck,
+                            countryDeck: widget.countryDeck,
                             cardTag:
-                                widget.languageCard.languageCardId.toString(),
+                                widget.countryCard.countryCardId.toString(),
                           );
                         }));
                       } else if (value == "share") {
@@ -87,8 +85,8 @@ class _LanguageCardViewState extends State<LanguageCardView> {
                       } else if (value == "remove") {
                         // Remove the card from the deck
                         DatabaseHelper.instance.removeCardFromDeck(
-                          widget.languageDeck.languageDeckId!,
-                          widget.languageCard.languageCardId!,
+                          widget.countryDeck.countryDeckId!,
+                          widget.countryCard.countryCardId!,
                         );
                         widget.onDelete();
                       } else if (value == "delete") {
@@ -110,7 +108,7 @@ class _LanguageCardViewState extends State<LanguageCardView> {
                                     child: const Text("Delete"),
                                     onPressed: () {
                                       DatabaseHelper.instance.deleteCard(
-                                        widget.languageCard.languageCardId!,
+                                        widget.countryCard.countryCardId!,
                                       );
                                       widget.onDelete();
                                       // Delete the card
@@ -165,7 +163,7 @@ class _LanguageCardViewState extends State<LanguageCardView> {
                       ),
                       const PopupMenuDivider(),
                       // If isDefault is false, remove from deck option
-                      if (!widget.languageDeck.isDefault!)
+                      if (!widget.countryDeck.isDefault!)
                         const PopupMenuItem(
                           value: "remove",
                           height: 35,
@@ -207,7 +205,7 @@ class _LanguageCardViewState extends State<LanguageCardView> {
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.only(right: 16, left: 16),
-                    child: AutoSizeText(widget.languageCard.nativeText,
+                    child: AutoSizeText(widget.countryCard.nativeText,
                         maxLines: 2,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
