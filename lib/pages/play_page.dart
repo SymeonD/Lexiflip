@@ -6,7 +6,6 @@ import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/country.dart';
 import 'package:cards/models/country_card.dart';
 import 'package:cards/models/country_deck.dart';
-import 'package:cards/utils/country_to_language.dart';
 import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:confetti/confetti.dart';
 import 'package:country_flags/country_flags.dart';
@@ -82,7 +81,7 @@ class _PlayPageState extends State<PlayPage> {
         ConfettiController(duration: const Duration(seconds: 1));
     _loadCards().then((value) => {
           initTts().then((value) =>
-              {widget.carMode ?? value && false ? playCarMode() : null})
+              {widget.carMode ?? true ? playCarMode() : null})
         });
   }
 

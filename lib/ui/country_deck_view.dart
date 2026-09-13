@@ -333,6 +333,7 @@ class _CountryDeckViewState extends State<CountryDeckView> {
                                         builder: (context) => PlayPage(
                                               country: widget.country,
                                               countryDeck: widget.countryDeck,
+                                              carMode: false,
                                             )))
                                 : showCustomSnackBar(
                                     "This deck is empty, add cards to it to play",
