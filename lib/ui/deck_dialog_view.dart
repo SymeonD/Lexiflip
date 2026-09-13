@@ -1,8 +1,8 @@
 import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
-import 'package:cards/models/language.dart';
-import 'package:cards/models/language_card.dart';
-import 'package:cards/models/language_deck.dart';
+import 'package:cards/models/country.dart';
+import 'package:cards/models/country_card.dart';
+import 'package:cards/models/country_deck.dart';
 import 'package:cards/ui/search_bar_view.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';

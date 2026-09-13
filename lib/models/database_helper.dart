@@ -1,6 +1,6 @@
-import 'package:cards/models/language.dart';
-import 'package:cards/models/language_card.dart';
-import 'package:cards/models/language_deck.dart';
+import 'package:cards/models/country.dart';
+import 'package:cards/models/country_card.dart';
+import 'package:cards/models/country_deck.dart';
 import 'package:logger/logger.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -37,16 +37,16 @@ class DatabaseHelper {
         path,
         onCreate: (db, version) async {
           await db.execute(
-              "CREATE TABLE IF NOT EXISTS languages (id INTEGER PRIMARY KEY AUTOINCREMENT, languageCode TEXT NOT NULL, languageName TEXT NOT NULL);");
+              "CREATE TABLE IF NOT EXISTS countries (id INTEGER PRIMARY KEY AUTOINCREMENT, countryCode TEXT NOT NULL, countryName TEXT NOT NULL, countryLanguageCode TEXT);");
 
           await db.execute(
-              "CREATE TABLE IF NOT EXISTS language_cards (id INTEGER PRIMARY KEY AUTOINCREMENT, languageId integer NOT NULL, nativeText TEXT NOT NULL, nativeNote TEXT, localText TEXT NOT NULL, localRomanization TEXT, FOREIGN KEY (languageId) REFERENCES languages(id) ON DELETE CASCADE);");
+              "CREATE TABLE IF NOT EXISTS country_cards (id INTEGER PRIMARY KEY AUTOINCREMENT, countryId integer NOT NULL, nativeText TEXT NOT NULL, nativeNote TEXT, localText TEXT NOT NULL, localRomanization TEXT, FOREIGN KEY (countryId) REFERENCES countries(id) ON DELETE CASCADE);");
 
           await db.execute(
-              "CREATE TABLE IF NOT EXISTS language_decks (id INTEGER PRIMARY KEY AUTOINCREMENT, languageId integer NOT NULL, languageDeckName TEXT NOT NULL, isDefault BOOLEAN NOT NULL DEFAULT 0, FOREIGN KEY (languageId) REFERENCES languages(id) ON DELETE CASCADE);");
+              "CREATE TABLE IF NOT EXISTS country_decks (id INTEGER PRIMARY KEY AUTOINCREMENT, countryId integer NOT NULL, countryDeckName TEXT NOT NULL, isDefault BOOLEAN NOT NULL DEFAULT 0, FOREIGN KEY (countryId) REFERENCES countries(id) ON DELETE CASCADE);");
 
           await db.execute(
-              "CREATE TABLE IF NOT EXISTS deck_cards (deckId INTEGER NOT NULL, cardId INTEGER NOT NULL, PRIMARY KEY (deckId, cardId), FOREIGN KEY (deckId) REFERENCES language_decks(id) ON DELETE CASCADE, FOREIGN KEY (cardId) REFERENCES language_cards(id) ON DELETE CASCADE);");
+              "CREATE TABLE IF NOT EXISTS deck_cards (deckId INTEGER NOT NULL, cardId INTEGER NOT NULL, PRIMARY KEY (deckId, cardId), FOREIGN KEY (deckId) REFERENCES country_decks(id) ON DELETE CASCADE, FOREIGN KEY (cardId) REFERENCES country_cards(id) ON DELETE CASCADE);");
         },
         version: 3,
       );
@@ -56,63 +56,64 @@ class DatabaseHelper {
     }
   }
 
-  // Insert Language into the database
-  Future<void> insertLanguage(Language language) async {
+  // Insert Country into the database
+  Future<void> insertCountry(Country country) async {
     try {
       final db = await database; // Wait for the database to be initialized
       await db.insert(
-        'languages',
-        language.toMap(),
+        'countries',
+        country.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
     } catch (e) {
-      Logger().e("Error inserting language: $e");
+      Logger().e("Error inserting country: $e");
     }
   }
 
-  // Get all the languages from the database
-  Future<List<Language>> getLanguages() async {
+  // Get all the countries from the database
+  Future<List<Country>> getCountries() async {
     try {
       final db = await database; // Wait for the database to be initialized
-      final List<Map<String, Object?>> maps = await db.query('languages');
+      final List<Map<String, Object?>> maps = await db.query('countries');
 
       return List.generate(maps.length, (i) {
-        return Language(
-          languageId: maps[i]['id'] as int,
-          languageCode: maps[i]['languageCode'] as String,
-          languageName: maps[i]['languageName'] as String,
+        return Country(
+          countryId: maps[i]['id'] as int,
+          countryCode: maps[i]['countryCode'] as String,
+          countryName: maps[i]['countryName'] as String,
+          countryLanguageCode: maps[i]['countryLanguageCode'] as String,
         );
       });
     } catch (e) {
-      Logger().e("Error getting languages: $e");
+      Logger().e("Error getting countries: $e");
       return []; // Return an empty list in case of error
     }
   }
 
-  // Delete a language from the database
-  Future<void> deleteLanguage(int languageId) async {
+  // Delete a country from the database
+  Future<void> deleteCountry(int countryId) async {
     try {
       final db = await database; // Wait for the database to be initialized
       await db.delete(
-        'languages',
+        'countries',
         where: "id = ?",
-        whereArgs: [languageId],
+        whereArgs: [countryId],
       );
     } catch (e) {
-      Logger().e("Error deleting language: $e");
+      Logger().e("Error deleting country: $e");
     }
   }
 
   // Insert a deck into the database
-  Future<int> insertDeck(int languageId, String languageDeckName,
+  Future<int> insertDeck(int countryId, String countryDeckName,
       [bool? isDefault = false]) async {
     try {
       final db = await database; // Wait for the database to be initialized
       return await db.insert(
-        'language_decks',
+        'country_decks',
         {
-          'languageId': languageId,
-          'languageDeckName': languageDeckName,
+          'countryId': countryId,
+          'countryDeckName': countryDeckName,
           'isDefault': isDefault.toString(),
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
@@ -123,21 +124,21 @@ class DatabaseHelper {
     return -1;
   }
 
-  // Get all the decks for a given language code
-  Future<List<LanguageDeck>> getDecks(int languageId) async {
+  // Get all the decks for a given country code
+  Future<List<CountryDeck>> getDecks(int countryId) async {
     try {
       final db = await database; // Wait for the database to be initialized
       final List<Map<String, Object?>> maps = await db.query(
-        'language_decks',
-        where: "languageId = ?",
-        whereArgs: [languageId],
+        'country_decks',
+        where: "countryId = ?",
+        whereArgs: [countryId],
       );
 
       return List.generate(maps.length, (i) {
-        return LanguageDeck(
-          languageDeckId: maps[i]['id'] as int,
-          languageId: maps[i]['languageId'] as int,
-          languageDeckName: maps[i]['languageDeckName'] as String,
+        return CountryDeck(
+          countryDeckId: maps[i]['id'] as int,
+          countryId: maps[i]['countryId'] as int,
+          countryDeckName: maps[i]['countryDeckName'] as String,
           isDefault: maps[i]['isDefault'] == 'true' ? true : false,
         );
       });
@@ -149,7 +150,7 @@ class DatabaseHelper {
 
   // Get the number of cards in a deck
   Future<int> getDeckCardCount(
-      int deckId, bool isDefault, int languageId) async {
+      int deckId, bool isDefault, int countryId) async {
     try {
       final db = await database; // Wait for the database to be initialized
       // If the deck is not 'All cards', search for the corresponding cards, else search for all cards
@@ -159,8 +160,8 @@ class DatabaseHelper {
         return maps[0]['COUNT(*)'] as int;
       } else {
         final List<Map<String, Object?>> maps = await db.rawQuery(
-            "SELECT COUNT(*) FROM language_cards WHERE languageId = ?",
-            [languageId]);
+            "SELECT COUNT(*) FROM country_cards WHERE countryId = ?",
+            [countryId]);
         return maps[0]['COUNT(*)'] as int;
       }
     } catch (e) {
@@ -170,14 +171,14 @@ class DatabaseHelper {
   }
 
   // Update a deck name in the database
-  Future<void> updateDeckName(int languageDeckId, String newDeckName) async {
+  Future<void> updateDeckName(int countryDeckId, String newDeckName) async {
     try {
       final db = await database; // Wait for the database to be initialized
       await db.update(
-        'language_decks',
-        {'languageDeckName': newDeckName},
+        'country_decks',
+        {'countryDeckName': newDeckName},
         where: "id = ?",
-        whereArgs: [languageDeckId],
+        whereArgs: [countryDeckId],
       );
     } catch (e) {
       Logger().e("Error updating deck name: $e");
@@ -185,13 +186,13 @@ class DatabaseHelper {
   }
 
   // Delete a deck from the database
-  Future<void> deleteDeck(int languageDeckId) async {
+  Future<void> deleteDeck(int countryDeckId) async {
     try {
       final db = await database; // Wait for the database to be initialized
       await db.delete(
-        'language_decks',
+        'country_decks',
         where: "id = ?",
-        whereArgs: [languageDeckId],
+        whereArgs: [countryDeckId],
       );
     } catch (e) {
       Logger().e("Error deleting deck: $e");
@@ -199,7 +200,7 @@ class DatabaseHelper {
   }
 
   // Get all the cards for a given deck
-  Future<List<LanguageCard?>> getCards(int languageDeckId, int languageId,
+  Future<List<CountryCard?>> getCards(int countryDeckId, int countryId,
       [bool isDefault = false]) async {
     try {
       final db = await database; // Wait for the database to be initialized
@@ -207,17 +208,17 @@ class DatabaseHelper {
       // If the deck is not 'All cards', search for the corresponding cards, else search for all cards
       if (!isDefault) {
         maps = await db.rawQuery(
-            "SELECT lc.* FROM language_cards lc JOIN deck_cards dc ON lc.id = dc.cardId WHERE dc.deckId = ?;",
-            [languageDeckId]);
+            "SELECT lc.* FROM country_cards lc JOIN deck_cards dc ON lc.id = dc.cardId WHERE dc.deckId = ?;",
+            [countryDeckId]);
       } else {
         maps = await db.rawQuery(
-            "SELECT * FROM language_cards WHERE languageId = ?", [languageId]);
+            "SELECT * FROM country_cards WHERE countryId = ?", [countryId]);
       }
 
       return List.generate(maps.length, (i) {
-        return LanguageCard(
-          languageCardId: maps[i]['id'] as int,
-          languageId: maps[i]['languageId'] as int,
+        return CountryCard(
+          countryCardId: maps[i]['id'] as int,
+          countryId: maps[i]['countryId'] as int,
           nativeText: maps[i]['nativeText'] as String,
           nativeNote: maps[i]['nativeNote'] as String?,
           localText: maps[i]['localText'] as String,
@@ -231,13 +232,13 @@ class DatabaseHelper {
   }
 
   // Insert a card into the database
-  Future<int> insertCard(LanguageCard card) async {
+  Future<int> insertCard(CountryCard card) async {
     try {
       final db = await database; // Wait for the database to be initialized
       return await db.insert(
-        'language_cards',
+        'country_cards',
         {
-          'languageId': card.languageId,
+          'countryId': card.countryId,
           'nativeText': card.nativeText,
           'nativeNote': card.nativeNote,
           'localText': card.localText,
@@ -283,11 +284,11 @@ class DatabaseHelper {
   }
 
   // Update a card in the database
-  Future<void> updateCard(LanguageCard card) async {
+  Future<void> updateCard(CountryCard card) async {
     try {
       final db = await database; // Wait for the database to be initialized
       await db.update(
-        'language_cards',
+        'country_cards',
         {
           'nativeText': card.nativeText,
           'nativeNote': card.nativeNote,
@@ -295,7 +296,7 @@ class DatabaseHelper {
           'localRomanization': card.localRomanization
         },
         where: "id = ?",
-        whereArgs: [card.languageCardId],
+        whereArgs: [card.countryCardId],
       );
     } catch (e) {
       Logger().e("Error updating card: $e");
@@ -303,14 +304,14 @@ class DatabaseHelper {
   }
 
   // Delete a card from the database and from all decks
-  // Input: languageCode, nativeText, nativeNote, localText, localRomanization
-  Future<void> deleteCard(int languageCardId) async {
+  // Input: countryCode, nativeText, nativeNote, localText, localRomanization
+  Future<void> deleteCard(int countryCardId) async {
     try {
       final db = await database; // Wait for the database to be initialized
       await db.delete(
-        'language_cards',
+        'country_cards',
         where: "id = ?",
-        whereArgs: [languageCardId],
+        whereArgs: [countryCardId],
       );
     } catch (e) {
       Logger().e("Error deleting card: $e");

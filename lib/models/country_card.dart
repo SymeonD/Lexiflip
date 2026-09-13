@@ -1,15 +1,15 @@
-class LanguageCard {
-  final int? languageCardId;
+class CountryCard {
+  final int? countryCardId;
 
-  final int languageId;
+  final int countryId;
   final String nativeText;
   final String? nativeNote;
   final String localText;
   final String? localRomanization;
 
-  LanguageCard(
-      {this.languageCardId,
-      required this.languageId,
+  CountryCard(
+      {this.countryCardId,
+      required this.countryId,
       required this.nativeText,
       this.nativeNote,
       required this.localText,

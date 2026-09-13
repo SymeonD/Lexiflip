@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
-import 'package:cards/models/language.dart';
-import 'package:cards/models/language_card.dart';
-import 'package:cards/models/language_deck.dart';
+import 'package:cards/models/country.dart';
+import 'package:cards/models/country_card.dart';
+import 'package:cards/models/country_deck.dart';
 import 'package:cards/ui/deck_dialog_view.dart';
-import 'package:cards/ui/language_deck_view.dart';
+import 'package:cards/ui/country_deck_view.dart';
 import 'package:cards/ui/search_bar_view.dart';
 import 'package:cards/utils/handle_share_permissions.dart';
 import 'package:cards/utils/show_custom_snackbar.dart';

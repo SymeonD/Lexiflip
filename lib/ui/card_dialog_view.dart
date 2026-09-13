@@ -1,9 +1,9 @@
 import 'package:auto_size_text_field/auto_size_text_field.dart';
 import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
-import 'package:cards/models/language.dart';
-import 'package:cards/models/language_card.dart';
-import 'package:cards/models/language_deck.dart';
+import 'package:cards/models/country.dart';
+import 'package:cards/models/country_card.dart';
+import 'package:cards/models/country_deck.dart';
 import 'package:cards/utils/country_to_language.dart';
 import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:country_flags/country_flags.dart';
