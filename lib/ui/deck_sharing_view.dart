@@ -31,7 +31,7 @@ class _DeckSharingViewState extends State<DeckSharingView> {
   Strategy strategy = Strategy.P2P_STAR; // Choose the appropriate strategy
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
     _loadUserName();
     _startSharing(); // Start sharing after permissions are handled
@@ -49,7 +49,7 @@ class _DeckSharingViewState extends State<DeckSharingView> {
     final Map<String, String> _pendingConnections = {}; // Map to hold pending connections
     final prefs = await SharedPreferences.getInstance();
     final nativeLangCode = prefs.getString('nativeLanguageCode') ?? 'en'; // Default to 'en' if not set
-    final targetLangCode = widget.country.countryLanguageCode ?? 'en'; // Default to 'en' if not set
+    final targetLangCode = widget.country.countryLanguageCode; // Default to 'en' if not set
 
     await Nearby().startAdvertising(_userName, strategy, 
     onConnectionInitiated: (id, info) {

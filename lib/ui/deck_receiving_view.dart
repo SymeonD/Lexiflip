@@ -61,7 +61,7 @@ class _DeckReceivingViewState extends State<DeckReceivingView> {
   }
 
   bool _isCompatible(DeckOffer offer) {
-    final myTargetLang = widget.country.countryLanguageCode ?? 'en'; // Default to 'en' if not set
+    final myTargetLang = widget.country.countryLanguageCode; // Default to 'en' if not set
     return offer.targetLanguageCode == myTargetLang &&
         offer.sourceLanguageCode == _myNativeLangCode;
   }

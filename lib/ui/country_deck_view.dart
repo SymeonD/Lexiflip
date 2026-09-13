@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
@@ -9,11 +7,8 @@ import 'package:cards/pages/country_deck_cards_page.dart';
 import 'package:cards/pages/play_page.dart';
 import 'package:cards/ui/deck_dialog_view.dart';
 import 'package:cards/ui/deck_sharing_view.dart';
-import 'package:cards/utils/handle_share_permissions.dart';
 import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
-import 'package:nearby_connections/nearby_connections.dart';
 
 class CountryDeckView extends StatefulWidget {
   final Country country;
@@ -76,10 +71,6 @@ class _CountryDeckViewState extends State<CountryDeckView> {
                 children: [
                   PopupMenuButton<String>(
                     onSelected: (value) async {
-                      // Then start the connection
-                      const String userName = "LexiFlip";
-                      const Strategy strategy = Strategy.P2P_STAR;
-
                       // Handle menu selection
                       if (value == "edit" && !widget.countryDeck.isDefault!) {
                         // Edit the deck

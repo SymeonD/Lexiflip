@@ -125,7 +125,7 @@ class _StartingPageState extends State<StartingPage> {
                   } : null,
                   style: ElevatedButton.styleFrom(
                     overlayColor: countryCode != null
-                        ? ThemeColors.primaryColor.withOpacity(0.1)
+                        ? ThemeColors.primaryColor.withValues(alpha: 0.1)
                         : Colors.transparent,
                   ),
                   icon: Icon(

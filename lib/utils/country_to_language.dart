@@ -1,7 +1,5 @@
 import 'package:cards/utils/show_custom_snackbar.dart';
-import 'package:flutter/material.dart';
 import 'package:google_mlkit_translation/google_mlkit_translation.dart';
-import 'package:logger/logger.dart';
 
 final Map<String, List<String>> countryToLanguageMap = {
   'AF': ['fa'], // Afghanistan (Pashto, Dari)

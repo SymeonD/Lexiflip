@@ -1,21 +1,15 @@
-import 'dart:convert';
-
 import 'package:cards/main.dart';
 import 'package:cards/models/database_helper.dart';
 import 'package:cards/models/country.dart';
-import 'package:cards/models/country_card.dart';
 import 'package:cards/models/country_deck.dart';
 import 'package:cards/ui/deck_dialog_view.dart';
 import 'package:cards/ui/country_deck_view.dart';
 import 'package:cards/ui/deck_receiving_view.dart';
 import 'package:cards/ui/search_bar_view.dart';
-import 'package:cards/utils/handle_share_permissions.dart';
-import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:logger/web.dart';
-import 'package:nearby_connections/nearby_connections.dart';
 
 class CountryDecksPage extends StatefulWidget {
   final Country country;
@@ -89,8 +83,6 @@ class _CountryDecksPageState extends State<CountryDecksPage> {
 
   @override
   Widget build(BuildContext context) {
-    const String userName = "LexiFlip";
-    const Strategy strategy = Strategy.P2P_STAR;
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
