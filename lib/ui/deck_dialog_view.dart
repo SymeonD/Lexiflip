@@ -12,12 +12,12 @@ class DeckDialogView extends StatefulWidget {
   // For editing an existing deck
   final CountryDeck? countryDeck;
   // Callback to reload the decks
-  final VoidCallback onDelete;
+  final VoidCallback onEdit;
   const DeckDialogView(
       {super.key,
       required this.country,
       this.countryDeck,
-      required this.onDelete});
+      required this.onEdit});
 
   @override
   State createState() => _DeckDialogViewState();
@@ -56,7 +56,7 @@ class _DeckDialogViewState extends State<DeckDialogView> {
     deckNameController.dispose();
     searchController.dispose();
     scrollController.dispose();
-    widget.onDelete();
+    widget.onEdit();
     super.dispose();
   }
 

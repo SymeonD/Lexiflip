@@ -27,7 +27,9 @@ class CountryDecksPage extends StatefulWidget {
 class _CountryDecksPageState extends State<CountryDecksPage> {
   List<CountryDeck> decks = [];
   List<CountryDeck> filteredDecks = [];
+  Map<int, int> deckCardCounts = {}; // Map to hold deckId and its card count
   final searchController = TextEditingController();
+  bool isDiscovering = false;
 
   @override
   void initState() {
@@ -66,8 +68,17 @@ class _CountryDecksPageState extends State<CountryDecksPage> {
             true); // True because default deck
         deckList = await db.getDecks(widget.country.countryId!);
       }
+
+      final counts = <int, int>{};
+      for (var deck in deckList) {
+        final count = await db.getDeckCardCount(
+            deck.countryDeckId!, deck.isDefault!, widget.country.countryId!);
+        counts[deck.countryDeckId!] = count;
+      }
+
       setState(() {
         decks = deckList;
+        deckCardCounts = counts;
         _filter(searchController.text);
       });
     } catch (e) {
@@ -77,7 +88,6 @@ class _CountryDecksPageState extends State<CountryDecksPage> {
 
   @override
   Widget build(BuildContext context) {
-    bool isDiscovering = false;
     const String userName = "LexiFlip";
     const Strategy strategy = Strategy.P2P_STAR;
     return Scaffold(
@@ -142,7 +152,8 @@ class _CountryDecksPageState extends State<CountryDecksPage> {
                   return CountryDeckView(
                     country: widget.country,
                     countryDeck: filteredDecks[index],
-                    onDelete: _loadCountryDecks,
+                    deckCardCount: deckCardCounts[filteredDecks[index].countryDeckId!] ?? 0,
+                    onEdit: _loadCountryDecks,
                   );
                 } else {
                   return InkWell(
@@ -153,7 +164,7 @@ class _CountryDecksPageState extends State<CountryDecksPage> {
                           builder: (BuildContext context) {
                             return DeckDialogView(
                               country: widget.country,
-                              onDelete: _loadCountryDecks,
+                              onEdit: _loadCountryDecks,
                             );
                           });
                     },

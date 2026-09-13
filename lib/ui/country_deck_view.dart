@@ -17,36 +17,26 @@ import 'package:nearby_connections/nearby_connections.dart';
 class CountryDeckView extends StatefulWidget {
   final Country country;
   final CountryDeck countryDeck;
-  final VoidCallback onDelete;
+  final int deckCardCount; // New parameter to hold the card count
+  final VoidCallback onEdit;
 
   const CountryDeckView(
       {super.key,
       required this.country,
       required this.countryDeck,
-      required this.onDelete});
+      required this.deckCardCount,
+      required this.onEdit});
 
   @override
   State createState() => _CountryDeckViewState();
 }
 
 class _CountryDeckViewState extends State<CountryDeckView> {
-  int _deckCardCount = 0;
   double scaleA = 1;
-
-  // Load the number of cards in the deck
-  void _loadDeckCardCount() async {
-    // Get the number of cards in the deck
-    _deckCardCount = await DatabaseHelper.instance.getDeckCardCount(
-        widget.countryDeck.countryDeckId!,
-        widget.countryDeck.isDefault!,
-        widget.country.countryId!);
-    setState(() {});
-  }
 
   @override
   void initState() {
     super.initState();
-    _loadDeckCardCount();
   }
 
   @override
@@ -65,7 +55,7 @@ class _CountryDeckViewState extends State<CountryDeckView> {
                 builder: (context) => CountryCardPage(
                     country: widget.country,
                     countryDeck: widget.countryDeck,
-                    onCardEdited: _loadDeckCardCount)));
+                    onCardEdited: widget.onEdit)));
       },
       child: SizedBox(
         width: 200,
@@ -98,7 +88,7 @@ class _CountryDeckViewState extends State<CountryDeckView> {
                               return DeckDialogView(
                                 country: widget.country,
                                 countryDeck: widget.countryDeck,
-                                onDelete: _loadDeckCardCount,
+                                onEdit: widget.onEdit,
                               );
                             });
                       } else if (value == "share") {
@@ -161,7 +151,7 @@ class _CountryDeckViewState extends State<CountryDeckView> {
                         });
                       } else if (value == "delete") {
                         // Delete the deck, show a confirmation dialog if more than 0 cards
-                        if (_deckCardCount > 0) {
+                        if (widget.deckCardCount > 0) {
                           showDialog(
                             context: context,
                             builder: (BuildContext context) {
@@ -184,7 +174,7 @@ class _CountryDeckViewState extends State<CountryDeckView> {
                                       // Delete the deck
                                       DatabaseHelper.instance.deleteDeck(
                                           widget.countryDeck.countryDeckId!);
-                                      widget.onDelete();
+                                      widget.onEdit();
                                       Navigator.of(context).pop();
                                     },
                                     child: const Text("Delete",
@@ -199,7 +189,7 @@ class _CountryDeckViewState extends State<CountryDeckView> {
                           // Delete the deck
                           DatabaseHelper.instance
                               .deleteDeck(widget.countryDeck.countryDeckId!);
-                          widget.onDelete();
+                          widget.onEdit();
                         }
                         setState(() {
                           // Remove the deck from the list
@@ -286,7 +276,7 @@ class _CountryDeckViewState extends State<CountryDeckView> {
                         child: InkWell(
                           splashColor: Colors.transparent,
                           onTap: () {
-                            _deckCardCount > 0
+                            widget.deckCardCount > 0
                                 ? Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -326,7 +316,7 @@ class _CountryDeckViewState extends State<CountryDeckView> {
                         child: InkWell(
                           splashColor: Colors.transparent,
                           onTap: () {
-                            _deckCardCount > 0
+                            widget.deckCardCount > 0
                                 ? Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -372,7 +362,7 @@ class _CountryDeckViewState extends State<CountryDeckView> {
                           fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
               ),
-              Text("$_deckCardCount card${_deckCardCount > 1 ? "s" : ""}"),
+              Text("${widget.deckCardCount} card${widget.deckCardCount > 1 ? "s" : ""}"),
             ],
           ),
         ),
