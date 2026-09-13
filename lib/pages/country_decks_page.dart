@@ -7,6 +7,7 @@ import 'package:cards/models/country_card.dart';
 import 'package:cards/models/country_deck.dart';
 import 'package:cards/ui/deck_dialog_view.dart';
 import 'package:cards/ui/country_deck_view.dart';
+import 'package:cards/ui/deck_receiving_view.dart';
 import 'package:cards/ui/search_bar_view.dart';
 import 'package:cards/utils/handle_share_permissions.dart';
 import 'package:cards/utils/show_custom_snackbar.dart';
@@ -189,103 +190,15 @@ class _CountryDecksPageState extends State<CountryDecksPage> {
                                       color: ThemeColors.secondaryFontColor,
                                       size: 30,
                                     ),
-                                    onPressed: () async {
-                                      if (isDiscovering) return;
-                                      await handleShare(context);
-
-                                      isDiscovering = true;
-
-                                      Future.delayed(
-                                          const Duration(seconds: 30), () {
-                                        Nearby().stopDiscovery();
-                                        isDiscovering = false;
-                                        showCustomSnackBar(
-                                            "Discovery stopped", 2);
-                                      });
-
-                                      await Nearby().startDiscovery(
-                                          userName, strategy, onEndpointFound:
-                                              (id, name, serviceId) {
-                                        showCustomSnackBar(
-                                            "endpoint found $name", 2);
-                                        // Optionally initiate connection here:
-                                        Nearby().requestConnection(userName, id,
-                                            onConnectionInitiated: (id, info) {
-                                          Nearby().acceptConnection(id,
-                                              onPayLoadRecieved:
-                                                  (endpointId, payload) async {
-                                            // Create a new deck from the payload
-                                            final data =
-                                                utf8.decode(payload.bytes!);
-                                            final jsonData = jsonDecode(data);
-                                            final deckName =
-                                                jsonData["deck"]["deckName"];
-                                            final countryId =
-                                                jsonData["deck"]["countryId"];
-                                            // Add the deck to the database
-                                            await DatabaseHelper.instance
-                                                .insertDeck(
-                                                    countryId, deckName)
-                                                .then((deckId) => {
-                                                      jsonData["cards"]
-                                                          .forEach((card) {
-                                                        Logger()
-                                                            .i("Card: $card");
-                                                        DatabaseHelper.instance
-                                                            .insertCard(CountryCard(
-                                                                countryId:
-                                                                    countryId,
-                                                                nativeText: card[
-                                                                    "nativeText"],
-                                                                nativeNote: card[
-                                                                    "nativeNote"],
-                                                                localText: card[
-                                                                    "localText"],
-                                                                localRomanization:
-                                                                    card[
-                                                                        "localRomanization"]))
-                                                            .then((cardId) => {
-                                                                  DatabaseHelper
-                                                                      .instance
-                                                                      .addCardToDeck(
-                                                                          deckId,
-                                                                          cardId)
-                                                                });
-                                                      }),
-                                                    });
-
-                                            // Reload the page
-                                            _loadCountryDecks();
-
-                                            showCustomSnackBar(
-                                                "Payload received: ${payload.toString()}",
-                                                2);
-                                          }, onPayloadTransferUpdate:
-                                                  (endpointId, update) {
-                                            // Handle progress or completion here
+                                    onPressed: () {
+                                      showDialog(
+                                          context: context,
+                                          builder: (BuildContext context) {
+                                            return DeckReceivingView(
+                                              country: widget.country,
+                                              onDeckReceived: _loadCountryDecks,
+                                            );
                                           });
-
-                                          showCustomSnackBar(
-                                              "connection initiated", 2);
-                                        }, onConnectionResult: (id, status) {
-                                          if (status == Status.CONNECTED) {
-                                            showCustomSnackBar(
-                                                "Connection successful", 2);
-                                          } else {
-                                            showCustomSnackBar(
-                                                "Connection failed", 2);
-                                          }
-                                        }, onDisconnected: (id) {
-                                          showCustomSnackBar("Disconnected", 2);
-                                          // Stop discovery if needed
-                                          Nearby().stopDiscovery();
-                                          isDiscovering = false;
-                                        });
-                                      }, onEndpointLost: (id) {
-                                        showCustomSnackBar("Endpoint lost", 2);
-                                        Nearby().stopDiscovery();
-                                        isDiscovering = false;
-                                      });
                                     },
                                   ),
                                 ],

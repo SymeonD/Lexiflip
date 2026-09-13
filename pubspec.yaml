@@ -55,6 +55,7 @@ dependencies:
   permission_handler: ^11.3.1
   location: ^7.0.1
   volume_controller: ^3.6.1
+  device_info_plus: ^13.2.0
 
 dev_dependencies:
   flutter_test:

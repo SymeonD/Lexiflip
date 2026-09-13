@@ -317,4 +317,6 @@ class DatabaseHelper {
       Logger().e("Error deleting card: $e");
     }
   }
+
+  Future<void> insertDeckAndCards(int i, deckName, List<CountryCard> cards) async {}
 }

@@ -8,6 +8,7 @@ import 'package:cards/models/country_deck.dart';
 import 'package:cards/pages/country_deck_cards_page.dart';
 import 'package:cards/pages/play_page.dart';
 import 'package:cards/ui/deck_dialog_view.dart';
+import 'package:cards/ui/deck_sharing_view.dart';
 import 'package:cards/utils/handle_share_permissions.dart';
 import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:flutter/material.dart';
@@ -92,63 +93,16 @@ class _CountryDeckViewState extends State<CountryDeckView> {
                               );
                             });
                       } else if (value == "share") {
-                        // Share the deck
-                        // check for rights
-                        await handleShare(context);
 
-                        await Nearby().startAdvertising(userName, strategy,
-                            onConnectionInitiated: (id, info) {
-                          Nearby().acceptConnection(id,
-                              onPayLoadRecieved: (endpointId, payload) {
-                            // Handle received payload here
-                            // For example, you can decode the payload and show it in a dialog
-                            showCustomSnackBar( "payload received", 2);
-                          }, onPayloadTransferUpdate: (endpointId, update) {
-                            // Handle progress or completion here
-                            Logger()
-                                .i("Payload transfer update: ${update.status}");
+                        // Open the share dialog
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return DeckSharingView(
+                              country: widget.country,
+                              countryDeck: widget.countryDeck,
+                            );
                           });
-                          showCustomSnackBar("connection initiated", 2);
-                        }, onConnectionResult: (id, status) async {
-                          if (status == Status.CONNECTED) {
-                            showCustomSnackBar("Connection successful", 2);
-
-                            // Create the payload
-                            final deckload = {
-                              "deckName": widget.countryDeck.countryDeckName,
-                              "countryId": widget.country.countryId,
-                            };
-                            final payload = {
-                              "deck": deckload,
-                              "cards": [],
-                            };
-                            // Get the cards in the deck
-                            final cards = await DatabaseHelper.instance
-                                .getCards(widget.countryDeck.countryDeckId!,
-                                    widget.country.countryId!);
-                            // Add the cards to the payload
-                            payload["cards"] = cards
-                                .map((card) => {
-                                      "nativeText": card!.nativeText,
-                                      "nativeNote": card.nativeNote,
-                                      "localText": card.localText,
-                                      "localRomanization":
-                                          card.localRomanization,
-                                    })
-                                .toList();
-                            final bytes = utf8.encode(jsonEncode(payload));
-                            // Send the payload
-                            Nearby().sendBytesPayload(id, bytes).then((_) {
-                              showCustomSnackBar( "Payload sent", 2);
-                            }).catchError((error) {
-                              showCustomSnackBar("Failed to send payload: $error", 2);
-                            });
-                          } else {
-                            showCustomSnackBar( "Connection failed", 2);
-                          }
-                        }, onDisconnected: (id) {
-                          showCustomSnackBar( "Disconnected", 2);
-                        });
                       } else if (value == "delete") {
                         // Delete the deck, show a confirmation dialog if more than 0 cards
                         if (widget.deckCardCount > 0) {
@@ -222,7 +176,7 @@ class _CountryDeckViewState extends State<CountryDeckView> {
                       ),
                       // Share option
                       PopupMenuItem(
-                        enabled: widget.countryDeck.countryDeckCards != null && widget.countryDeck.countryDeckCards!.isNotEmpty,
+                        enabled: widget.deckCardCount > 0,
                         value: "share",
                         height: 35,
                         child: const IntrinsicWidth(
