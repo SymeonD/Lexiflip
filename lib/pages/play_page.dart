@@ -231,22 +231,11 @@ class _PlayPageState extends State<PlayPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         backgroundColor: ThemeColors.backgroundColor,
         elevation: 0,
+        centerTitle: true,
         shape: Border(bottom: BorderSide(color: Colors.grey.shade300)),
-        title: Padding(
-          padding: const EdgeInsets.only(bottom: 5, left: 8),
-          child: Row(
-            children: [
-              CountryFlag.fromCountryCode(
-                widget.country.countryCode,
-                width: 60,
-                height: 40,
-                shape: const RoundedRectangle(7),
-              ),
-              const SizedBox(width: 8),
-              ConstrainedBox(
+        title: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: MediaQuery.of(context).size.width -
                       150, // Adjust this based on layout
@@ -262,9 +251,17 @@ class _PlayPageState extends State<PlayPage> {
                   ),
                 ),
               ),
-            ],
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: CountryFlag.fromCountryCode(
+              widget.country.countryCode,
+              width: 45,
+              height: 30,
+              shape: const RoundedRectangle(7),
+            ),
           ),
-        ),
+        ],
       ),
       body: cards.isEmpty
           ? Center(
