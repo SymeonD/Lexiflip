@@ -8,6 +8,7 @@ import 'package:cards/utils/handle_share_permissions.dart';
 import 'package:cards/utils/show_custom_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DeckOffer {

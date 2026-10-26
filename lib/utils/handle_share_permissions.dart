@@ -20,13 +20,17 @@ Future<void> handleShare(context) async {
       .map((entry) => entry.key)
       .toList();
 
-  if (deniedPermissions.isNotEmpty) {
+  if (deniedPermissions.isNotEmpty && await Permission.location.serviceStatus.isEnabled) {
     // Show the denied permissions to the user
     showCustomSnackBar(
       "These permissions are required to share the deck: ${deniedPermissions.join(', ')}",
       2,
     );
     return;
+  }
+
+  if (!await Permission.location.serviceStatus.isEnabled) {
+    showCustomSnackBar("Activez la localisation du téléphone pour continuer.", 3);
   }
 
   // Proceed with sharing if all permissions are granted

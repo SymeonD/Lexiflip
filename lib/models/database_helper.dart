@@ -318,5 +318,49 @@ class DatabaseHelper {
     }
   }
 
-  Future<void> insertDeckAndCards(int i, deckName, List<CountryCard> cards) async {}
+  Future<void> insertDeckAndCards(int countryCardId, String deckName, List<CountryCard> cards) async {
+    try {
+      final db = await database; // Wait for the database to be initialized
+      // Start a transaction to ensure atomicity
+      await db.transaction((txn) async {
+        // Insert the new deck
+        int deckId = await txn.insert(
+          'country_decks',
+          {
+            'countryId': countryCardId,
+            'countryDeckName': deckName,
+            'isDefault': false,
+          },
+          conflictAlgorithm: ConflictAlgorithm.abort,
+        );
+
+        // Insert each card and associate it with the new deck
+        for (var card in cards) {
+          int cardId = await txn.insert(
+            'country_cards',
+            {
+              'countryId': card.countryId,
+              'nativeText': card.nativeText,
+              'nativeNote': card.nativeNote,
+              'localText': card.localText,
+              'localRomanization': card.localRomanization,
+            },
+            conflictAlgorithm: ConflictAlgorithm.abort,
+          );
+
+          // Associate the card with the new deck
+          await txn.insert(
+            'deck_cards',
+            {
+              'deckId': deckId,
+              'cardId': cardId,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+      });
+    } catch (e) {
+      Logger().e("Error inserting deck and cards: $e");
+    }
+  }
 }
